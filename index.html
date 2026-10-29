@@ -31,18 +31,11 @@
 
     <main id="clock-stage">
         
-        <!-- NEW SVG HOLOGRAPHIC HUD -->
+        <!-- 3D GYROSCOPE HUD -->
         <div class="hud-wrapper" id="hud-wrapper">
-            <svg class="hud-svg" viewBox="0 0 500 500">
-                <!-- Outer Magenta Ring -->
-                <ellipse class="ring-outer" cx="250" cy="250" rx="220" ry="70" />
-                <!-- Middle Cyan Ring -->
-                <ellipse class="ring-middle" cx="250" cy="250" rx="170" ry="50" />
-                <!-- Inner Amber Ring -->
-                <ellipse class="ring-inner" cx="250" cy="250" rx="120" ry="35" />
-                <!-- Radar Tick Marks -->
-                <ellipse class="ring-ticks" cx="250" cy="250" rx="195" ry="60" />
-            </svg>
+            <div class="ring ring-outer"><div class="ring-node"></div></div>
+            <div class="ring ring-middle"><div class="ring-node"></div></div>
+            <div class="ring ring-inner"><div class="ring-node"></div></div>
         </div>
 
         <div class="clock-window">
