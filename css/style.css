@@ -68,3 +68,41 @@ footer{display:flex;justify-content:space-between;gap:12px;padding:19px 0 32px;c
 .stage-footer,.core-topline{position:relative;z-index:2}
 @media(max-width:760px){.stage{min-height:310px;height:min(410px,calc(100svh - 280px))}.fallback-shell{height:145px}.fallback-cap{height:166px}.fallback-screen{min-height:70px}.fallback-screen small{font-size:8px}}
 @media(max-width:390px){.stage{height:360px}.fallback-shell{width:80%;height:135px}.fallback-cap{height:155px}}
+
+/* 2.4: the 3D scene is the product; its controls remain touch-friendly and usable
+   without the 3D renderer (the fallback disables interactive view buttons). */
+.view-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 15px;background:#06182a;border-top:1px solid #20506a}
+.view-toolbar-label{font:9px 'Share Tech Mono',monospace;letter-spacing:1.3px;color:#68b5ca;flex:0 0 auto}
+.view-tools{display:flex;flex:1;flex-wrap:wrap;align-items:center;gap:6px}
+.view-btn,.component-pick{border:1px solid #2a607c;background:#0a2639;color:#b3ebf5;border-radius:3px;min-height:38px;padding:6px 12px;letter-spacing:.65px;white-space:nowrap;font-size:9px;transition:background .16s,box-shadow .16s,border-color .16s}
+.view-btn:first-child,.view-btn:nth-child(2){font:22px/1 'Share Tech Mono',monospace;min-width:42px;padding:5px 9px}
+.view-btn:not(:disabled):hover,.view-btn[aria-pressed="true"],.component-pick:not(:disabled):hover,.component-pick[aria-pressed="true"]{border-color:#5beeff;background:#153d52;box-shadow:0 0 13px #0bc9ff20}
+.view-btn:focus-visible,.component-pick:focus-visible,#three-canvas:focus-visible{outline:2px solid #ebffff;outline-offset:2px}
+.part-inspector{padding:13px 17px 16px;border-top:1px solid #1b4761;background:linear-gradient(105deg,#071b2c,#051321)}
+.part-inspector-top{font:10px 'Share Tech Mono',monospace;letter-spacing:2px;color:#6bc7db;display:flex;justify-content:space-between;gap:8px}
+.part-inspector-top span{color:#417a98}
+.part-inspector-body{display:flex;align-items:center;gap:14px;margin:9px 0 11px}
+.part-inspector-body strong{min-width:120px;color:#ddfaff;font-size:12px;letter-spacing:1px}
+.part-inspector-body p{font:12px/1.5 'Share Tech Mono',monospace;color:#93bcd0;margin:0}
+.component-picks{display:flex;gap:7px;flex-wrap:wrap}
+.component-pick{min-height:33px;padding:7px 12px;font:10px 'Share Tech Mono',monospace;letter-spacing:1px}
+#three-canvas{cursor:grab}#three-canvas:active{cursor:grabbing}
+.core-bay:fullscreen{width:100vw;height:100vh;max-width:none;display:flex;flex-direction:column;background:#030d1b;padding:8px;overflow:auto}
+.core-bay:fullscreen .stage{flex:1;min-height:230px;height:auto}
+.core-bay:fullscreen .stage-footer{flex:none}
+@media(max-width:760px){
+  .view-toolbar{padding:10px;gap:7px}
+  .view-toolbar-label{width:100%}
+  .view-tools{gap:5px}
+  .view-btn{padding:6px 8px;font-size:8px;min-height:40px}
+  .view-btn:first-child,.view-btn:nth-child(2){min-width:40px}
+  .part-inspector{padding:12px}
+  .part-inspector-body{display:block}
+  .part-inspector-body strong{font-size:11px}
+  .part-inspector-body p{margin-top:5px;font-size:12px}
+  .component-pick{flex:1;min-width:75px}
+  .core-bay:fullscreen .stage{min-height:200px;height:auto}
+}
+@media(max-width:390px){.view-btn span{font-size:7px}.view-btn{padding:5px 6px;letter-spacing:0}}
+
+@media(max-width:760px){.view-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.view-btn,.view-btn:first-child,.view-btn:nth-child(2){width:100%;min-height:42px;padding:8px 4px}.view-btn span{font-size:9px}.component-pick{min-height:40px}}
