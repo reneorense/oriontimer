@@ -127,7 +127,7 @@ h1 {
     width: 100%;
     padding: 10px;
     perspective: var(--perspective);
-    overflow-x: auto;
+    overflow: visible; /* Changed from auto so rings don't clip */
     position: relative;
 }
 
@@ -136,17 +136,18 @@ h1 {
     align-items: center;
     justify-content: center;
     padding: 30px;
-    background: rgba(5, 10, 20, 0.7);
-    border-top: 2px solid rgba(0, 243, 255, 0.3);
-    border-bottom: 2px solid rgba(0, 243, 255, 0.3);
-    box-shadow: 0 0 50px rgba(0, 243, 255, 0.1), inset 0 0 30px rgba(0, 0, 0, 0.8);
+    /* Made more transparent so rings show through */
+    background: rgba(5, 10, 20, 0.5); 
+    border-top: 2px solid rgba(0, 243, 255, 0.5);
+    border-bottom: 2px solid rgba(0, 243, 255, 0.5);
+    box-shadow: 0 0 50px rgba(0, 243, 255, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.8);
     border-radius: 20px;
     transform-style: preserve-3d;
     min-height: 150px;
     transition: transform 0.3s ease;
     transform-origin: center center;
     backdrop-filter: blur(5px);
-    z-index: 5; /* Above the HUD rings */
+    z-index: 5; /* Above the rings */
 }
 
 .clock-window.scaled-down { transform: scale(0.75); }
@@ -238,57 +239,63 @@ h1 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
-    z-index: 1;
-    perspective: 1000px;
+    z-index: 1; /* Behind clock window (z-index 5) */
     display: flex;
     justify-content: center;
     align-items: center;
-    opacity: 0.6; /* Faded when idle */
+    opacity: 0.7;
     transition: opacity 0.5s ease;
 }
 
-/* Glow brighter when active */
-.hud-wrapper.active {
-    opacity: 1;
-}
+.hud-wrapper.active { opacity: 1; }
 
 .ring {
     position: absolute;
     border-radius: 50%;
-    /* This tilt creates the 3D floor effect */
-    transform: rotateX(75deg); 
-    border: 2px solid transparent;
+    /* Changed tilt to 65deg so the rings are thicker and more visible */
+    transform: rotateX(65deg); 
+    border: 4px solid transparent; /* Much thicker border */
 }
 
 .ring-outer {
-    width: 450px;
-    height: 450px;
-    border-top: 2px solid var(--neon-magenta);
-    border-bottom: 2px dashed var(--neon-magenta);
-    box-shadow: 0 0 20px rgba(255, 0, 234, 0.2), inset 0 0 20px rgba(255, 0, 234, 0.2);
+    width: 500px;
+    height: 500px;
+    border-top: 4px solid var(--neon-magenta);
+    border-bottom: 4px dashed var(--neon-magenta);
+    box-shadow: 0 0 40px rgba(255, 0, 234, 0.4), inset 0 0 40px rgba(255, 0, 234, 0.4);
     animation: spin 15s linear infinite;
 }
 
 .ring-middle {
-    width: 350px;
-    height: 350px;
-    border-left: 3px dotted var(--neon-cyan);
-    border-right: 3px solid var(--neon-cyan);
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.2);
+    width: 380px;
+    height: 380px;
+    border-left: 6px dotted var(--neon-cyan);
+    border-right: 6px solid var(--neon-cyan);
+    box-shadow: 0 0 40px rgba(0, 243, 255, 0.4), inset 0 0 40px rgba(0, 243, 255, 0.4);
     animation: spin-reverse 10s linear infinite;
 }
 
 .ring-inner {
-    width: 250px;
-    height: 250px;
-    border: 1px solid var(--neon-amber);
-    border-top: 4px solid transparent;
-    border-bottom: 4px solid var(--neon-amber);
-    box-shadow: 0 0 20px rgba(255, 184, 0, 0.2);
+    width: 260px;
+    height: 260px;
+    border: 3px solid var(--neon-amber);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid var(--neon-amber);
+    box-shadow: 0 0 30px rgba(255, 184, 0, 0.4), inset 0 0 30px rgba(255, 184, 0, 0.4);
     animation: spin 5s linear infinite;
+}
+
+/* Crosshair lines in the center */
+.hud-crosshair {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border: 1px dashed rgba(0, 243, 255, 0.2);
+    border-radius: 50%;
+    transform: rotateX(65deg);
 }
 
 /* When the timer is running, spin faster */
@@ -297,18 +304,19 @@ h1 {
 .hud-wrapper.active .ring-inner { animation-duration: 1s; }
 
 @keyframes spin {
-    0% { transform: rotateX(75deg) rotateZ(0deg); }
-    100% { transform: rotateX(75deg) rotateZ(360deg); }
+    0% { transform: rotateX(65deg) rotateZ(0deg); }
+    100% { transform: rotateX(65deg) rotateZ(360deg); }
 }
 
 @keyframes spin-reverse {
-    0% { transform: rotateX(75deg) rotateZ(360deg); }
-    100% { transform: rotateX(75deg) rotateZ(0deg); }
+    0% { transform: rotateX(65deg) rotateZ(360deg); }
+    100% { transform: rotateX(65deg) rotateZ(0deg); }
 }
 
-/* Scale rings down on mobile */
+/* Scale rings down on mobile so they fit the screen */
 @media (max-width: 600px) {
-    .ring-outer { width: 300px; height: 300px; }
-    .ring-middle { width: 220px; height: 220px; }
-    .ring-inner { width: 140px; height: 140px; }
+    .ring-outer { width: 320px; height: 320px; }
+    .ring-middle { width: 240px; height: 240px; }
+    .ring-inner { width: 160px; height: 160px; }
+    .hud-crosshair { width: 380px; height: 380px; }
 }
