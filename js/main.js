@@ -12,7 +12,12 @@ const btnPause = document.getElementById('btn-pause');
 const btnReset = document.getElementById('btn-reset');
 const sfxToggleBtn = document.getElementById('sfx-toggle');
 const clockWindow = document.querySelector('.clock-window');
-const hudWrapper = document.getElementById('hud-wrapper'); // NEW: The rings container
+
+// Function to notify the 3D engine of state changes
+function notify3DEngine(isRunning) {
+    const event = new CustomEvent('timerStateChanged', { detail: { isRunning } });
+    window.dispatchEvent(event);
+}
 
 // 1. Initialize Engine
 const engine = new TimerEngine(
@@ -21,7 +26,7 @@ const engine = new TimerEngine(
         btnStart.disabled = false;
         btnPause.disabled = true;
         sfx.playAlarm();
-        hudWrapper.classList.remove('active'); // Rings slow down when finished
+        notify3DEngine(false); // Stop 3D spin
     }
 );
 
@@ -93,14 +98,14 @@ btnStart.addEventListener('click', () => {
     engine.start();
     btnStart.disabled = true;
     btnPause.disabled = false;
-    hudWrapper.classList.add('active'); // Rings spin fast
+    notify3DEngine(true); // Trigger 3D spin up
 });
 
 btnPause.addEventListener('click', () => {
     engine.pause();
     btnStart.disabled = false;
     btnPause.disabled = true;
-    hudWrapper.classList.remove('active'); // Rings slow down
+    notify3DEngine(false); // Trigger 3D slow down
 });
 
 btnReset.addEventListener('click', () => {
@@ -108,7 +113,7 @@ btnReset.addEventListener('click', () => {
     engine.reset();
     btnStart.disabled = false;
     btnPause.disabled = true;
-    hudWrapper.classList.remove('active'); // Rings slow down
+    notify3DEngine(false); // Trigger 3D slow down
 });
 
 sfxToggleBtn.addEventListener('click', () => {
