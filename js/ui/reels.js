@@ -1,4 +1,3 @@
-console.log("reels.js loaded");
 export function createReelContainer(id, label) {
     const container = document.createElement('div');
     container.className = 'reel-container';
