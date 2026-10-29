@@ -1,176 +1,144 @@
-import { decomposeTime } from './core/time.js';
-import { TimerEngine } from './core/engine.js';
-import { setupControls, syncInputBoxes } from './ui/controls.js';
-import { createReelContainer, setReelDigit } from './ui/reels.js';
-import { sfx } from './audio/sfx.js'; 
+import {TimerEngine} from './core/engine.js';
+import {setupControls, syncInputBoxes} from './ui/controls.js';
+import {sfx} from './audio/sfx.js';
 
-const plusReels = document.getElementById('plus-reels');
-const baseReels = document.getElementById('base-reels');
-const plusSeparator = document.getElementById('plus-separator');
-const btnStart = document.getElementById('btn-start');
-const btnPause = document.getElementById('btn-pause');
-const btnReset = document.getElementById('btn-reset');
-const sfxToggleBtn = document.getElementById('sfx-toggle');
-const clockWindow = document.querySelector('.clock-window');
-const missionStatus = document.getElementById('mission-status');
-const missionProgress = document.getElementById('mission-progress');
-const missionProgressFill = document.getElementById('mission-progress-fill');
-let initialDurationMs = 0;
-let completed = false;
+const startBtn=document.getElementById('btn-start');
+const pauseBtn=document.getElementById('btn-pause');
+const resetBtn=document.getElementById('btn-reset');
+const sfxToggle=document.getElementById('sfx-toggle');
+const statusEl=document.getElementById('mission-status');
+const telemetryTime=document.getElementById('telemetry-time');
+const fallbackTime=document.getElementById('fallback-time');
+const reactorStatus=document.getElementById('reactor-status');
+const progressFill=document.getElementById('mission-progress-fill');
+const progressEl=document.getElementById('mission-progress');
+const progressNumber=document.getElementById('progress-number');
+const presets=Array.from(document.querySelectorAll('.preset-btn'));
 
-function setStatus(text, mode = 'idle') {
-    missionStatus.textContent = text;
-    missionStatus.dataset.mode = mode;
+let initialDurationMs=0;
+let paused=false;
+let lastDisplay='';
+
+/** Readable clock format used by both DOM and the real 3D CanvasTexture. */
+export function formatCountdown(ms){
+  const totalSeconds=Math.max(0,Math.ceil(ms/1000));
+  const days=Math.floor(totalSeconds/86400);
+  const hours=Math.floor((totalSeconds%86400)/3600);
+  const minutes=Math.floor((totalSeconds%3600)/60);
+  const seconds=totalSeconds%60;
+  const pad=n=>String(n).padStart(2,'0');
+  if(days>0)return `${days}D ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  if(hours>0)return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  return `${pad(minutes)}:${pad(seconds)}`;
 }
 
-function setDuration(ms) {
-    // Only idle/paused countdowns can be edited. A fresh duration becomes the baseline.
-    if (engine.isRunning) return;
-    initialDurationMs = Math.max(0, ms);
-    completed = false;
-    engine.setTime(initialDurationMs);
-    setStatus(initialDurationMs > 0 ? 'MISSION READY' : 'AWAITING INPUT', 'idle');
-    btnStart.disabled = initialDurationMs <= 0;
-    btnPause.disabled = true;
-    notify3DEngine(false);
+function setStatus(message,mode='idle'){
+  statusEl.textContent=message;
+  statusEl.dataset.mode=mode;
+  reactorStatus.textContent={running:'COUNTDOWN ACTIVE',paused:'POWER HOLD',complete:'MISSION COMPLETE',idle:'STANDBY'}[mode]||'STANDBY';
+  document.body.dataset.mode=mode;
 }
 
-
-// Function to notify the 3D engine of state changes
-function notify3DEngine(isRunning) {
-    const event = new CustomEvent('timerStateChanged', { detail: { isRunning } });
-    window.dispatchEvent(event);
+function notify3DEngine(isRunning=false,state='idle'){
+  window.dispatchEvent(new CustomEvent('timerStateChanged',{detail:{isRunning,isPaused:state==='paused',isComplete:state==='complete'}}));
 }
 
-// 1. Initialize Engine
-const engine = new TimerEngine(
-    (ms) => updateClockDisplay(ms), 
-    () => {                         
-        completed = true;
-        btnStart.disabled = true;
-        btnPause.disabled = true;
-        setStatus('MISSION COMPLETE', 'complete');
-        sfx.playAlarm();
-        notify3DEngine(false); // Stop 3D spin
-    }
+function updateClockDisplay(ms){
+  const progress=initialDurationMs>0?Math.min(1,Math.max(0,ms/initialDurationMs)):0;
+  const display=formatCountdown(ms);
+  // The expensive texture is repainted only when its digits or state change.
+  telemetryTime.textContent=display;
+  fallbackTime.textContent=display;
+  progressFill.style.transform=`scaleX(${progress})`;
+  progressEl.setAttribute('aria-valuenow',String(Math.round(progress*100)));
+  progressNumber.textContent=`${String(Math.round(progress*100)).padStart(3,'0')}%`;
+  syncInputBoxes(ms);
+  window.dispatchEvent(new CustomEvent('timerProgress',{
+    detail:{remainingMs:ms,totalMs:initialDurationMs,progress,display}
+  }));
+  lastDisplay=display;
+}
+
+const engine=new TimerEngine(
+  ms=>updateClockDisplay(ms),
+  ()=>{
+    paused=false;
+    startBtn.disabled=true;
+    pauseBtn.disabled=true;
+    startBtn.innerHTML='<span class="action-symbol">▶</span> INITIALIZE';
+    setStatus('MISSION COMPLETE','complete');
+    notify3DEngine(false,'complete');
+    sfx.playAlarm();
+  }
 );
 
-// 2. Build 3D Reels
-function initClockLayout() {
-    plusReels.innerHTML = '';
-    baseReels.innerHTML = '';
-
-    plusReels.appendChild(createReelContainer('years-tens', 'YRS'));
-    plusReels.appendChild(createReelContainer('years-ones', ''));
-    plusReels.appendChild(createReelContainer('months-tens', 'MOS'));
-    plusReels.appendChild(createReelContainer('months-ones', ''));
-    plusReels.appendChild(createReelContainer('weeks-tens', 'WKS'));
-    plusReels.appendChild(createReelContainer('weeks-ones', ''));
-
-    baseReels.appendChild(createReelContainer('days-tens', 'DAYS'));
-    baseReels.appendChild(createReelContainer('days-ones', ''));
-    baseReels.appendChild(createReelContainer('hours-tens', 'HRS'));
-    baseReels.appendChild(createReelContainer('hours-ones', ''));
-    baseReels.appendChild(createReelContainer('minutes-tens', 'MIN'));
-    baseReels.appendChild(createReelContainer('minutes-ones', ''));
-    baseReels.appendChild(createReelContainer('seconds-tens', 'SEC'));
-    baseReels.appendChild(createReelContainer('seconds-ones', ''));
-    baseReels.appendChild(createReelContainer('ms-hundreds', 'MS'));
-    baseReels.appendChild(createReelContainer('ms-tens', ''));
+function setDuration(ms){
+  if(engine.isRunning)return;
+  paused=false;
+  initialDurationMs=Math.max(0,Number(ms)||0);
+  engine.setTime(initialDurationMs);
+  startBtn.disabled=initialDurationMs<=0;
+  pauseBtn.disabled=true;
+  startBtn.innerHTML='<span class="action-symbol">▶</span> INITIALIZE';
+  setStatus(initialDurationMs>0?'MISSION ARMED':'AWAITING INPUT','idle');
+  notify3DEngine(false,'idle');
+  presets.forEach(btn=>btn.classList.toggle('active',Number(btn.dataset.minutes)*60000===initialDurationMs));
 }
 
-// 3. Update Visuals
-function updateClockDisplay(ms) {
-    syncInputBoxes(ms);
-    const progress = initialDurationMs > 0 ? Math.max(0, Math.min(1, ms / initialDurationMs)) : 0;
-    missionProgressFill.style.transform = `scaleX(${progress})`;
-    missionProgress.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
-    window.dispatchEvent(new CustomEvent('timerProgress', {
-        detail: { remainingMs: ms, totalMs: initialDurationMs, progress }
-    }));
-    const time = decomposeTime(ms);
+setupControls(ms=>setDuration(ms),()=>engine.isRunning,sfx);
 
-    setReelDigit('years-tens', Math.floor(time.years / 10), '#ff00ea');
-    setReelDigit('years-ones', time.years % 10, '#ff00ea');
-    setReelDigit('months-tens', Math.floor(time.months / 10), '#ff00ea');
-    setReelDigit('months-ones', time.months % 10, '#ff00ea');
-    setReelDigit('weeks-tens', Math.floor(time.weeks / 10), '#ff00ea');
-    setReelDigit('weeks-ones', time.weeks % 10, '#ff00ea');
+presets.forEach(button=>button.addEventListener('click',()=>{
+  if(engine.isRunning)return;
+  sfx.init();sfx.playTick();
+  setDuration(Number(button.dataset.minutes)*60000);
+}));
 
-    setReelDigit('days-tens', Math.floor(time.days / 10), '#ffb800');
-    setReelDigit('days-ones', time.days % 10, '#ffb800');
-    setReelDigit('hours-tens', Math.floor(time.hours / 10), '#00ff66');
-    setReelDigit('hours-ones', time.hours % 10, '#00ff66');
-    setReelDigit('minutes-tens', Math.floor(time.minutes / 10), '#00ff66');
-    setReelDigit('minutes-ones', time.minutes % 10, '#00ff66');
-    setReelDigit('seconds-tens', Math.floor(time.seconds / 10), '#00f3ff');
-    setReelDigit('seconds-ones', time.seconds % 10, '#00f3ff');
-    setReelDigit('ms-hundreds', Math.floor(time.ms / 100), '#5a7a9e');
-    setReelDigit('ms-tens', Math.floor((time.ms % 100) / 10), '#5a7a9e');
-
-    const hasPlusUnits = time.years > 0 || time.months > 0 || time.weeks > 0;
-    plusReels.classList.toggle('hidden', !hasPlusUnits);
-    plusSeparator.classList.toggle('hidden', !hasPlusUnits);
-    
-    if (hasPlusUnits) clockWindow.classList.add('scaled-down');
-    else clockWindow.classList.remove('scaled-down');
-}
-
-// 4. Setup Controls
-setupControls(
-    (newMs) => setDuration(newMs), 
-    () => engine.isRunning,           
-    sfx
-);
-
-// 5. Buttons
-btnStart.addEventListener('click', () => {
-    sfx.init();
-    if (!engine.start()) return;
-    completed = false;
-    btnStart.disabled = true;
-    btnPause.disabled = false;
-    setStatus('MISSION ACTIVE', 'running');
-    notify3DEngine(true); // Trigger 3D spin up
+startBtn.addEventListener('click',()=>{
+  sfx.init();
+  if(!engine.start())return;
+  paused=false;
+  startBtn.disabled=true;
+  pauseBtn.disabled=false;
+  setStatus('COUNTDOWN ACTIVE','running');
+  notify3DEngine(true,'running');
 });
 
-btnPause.addEventListener('click', () => {
-    engine.pause();
-    btnStart.disabled = engine.remainingMs <= 0;
-    btnPause.disabled = true;
-    setStatus('MISSION PAUSED', 'paused');
-    notify3DEngine(false); // Trigger 3D slow down
+pauseBtn.addEventListener('click',()=>{
+  if(!engine.isRunning)return;
+  engine.pause();
+  paused=true;
+  startBtn.disabled=engine.remainingMs<=0;
+  pauseBtn.disabled=true;
+  startBtn.innerHTML='<span class="action-symbol">▶</span> RESUME';
+  setStatus('MISSION PAUSED','paused');
+  notify3DEngine(false,'paused');
 });
 
-btnReset.addEventListener('click', () => {
-    sfx.init();
-    engine.reset();
-    initialDurationMs = 0;
-    completed = false;
-    btnStart.disabled = true;
-    btnPause.disabled = true;
-    setStatus('AWAITING INPUT', 'idle');
-    notify3DEngine(false); // Trigger 3D slow down
+resetBtn.addEventListener('click',()=>{
+  engine.reset();
+  initialDurationMs=0;
+  paused=false;
+  startBtn.disabled=true;
+  pauseBtn.disabled=true;
+  startBtn.innerHTML='<span class="action-symbol">▶</span> INITIALIZE';
+  setStatus('AWAITING INPUT','idle');
+  notify3DEngine(false,'idle');
+  presets.forEach(btn=>btn.classList.remove('active'));
 });
 
-sfxToggleBtn.addEventListener('click', () => {
-    sfx.init();
-    const isEnabled = sfx.toggle();
-    sfxToggleBtn.textContent = isEnabled ? '🔊 SFX ON' : '🔇 SFX OFF';
-    sfxToggleBtn.setAttribute('aria-pressed', String(isEnabled));
-    sfxToggleBtn.style.color = isEnabled ? 'var(--neon-cyan)' : '#666';
+sfxToggle.addEventListener('click',()=>{
+  sfx.init();
+  const enabled=sfx.toggle();
+  sfxToggle.textContent=enabled?'SFX ON':'SFX OFF';
+  sfxToggle.setAttribute('aria-pressed',String(enabled));
 });
 
-// Quick presets are separate from the fine-grained time controls.
-document.querySelectorAll('.preset-btn').forEach(button => {
-    button.addEventListener('click', () => {
-        if (engine.isRunning) return;
-        sfx.init();
-        sfx.playTick();
-        setDuration(Number(button.dataset.minutes) * 60 * 1000);
-    });
+// Re-sync initial time with the 3D scene after its asynchronous renderer starts.
+window.addEventListener('orion3DReady',()=>{
+  updateClockDisplay(engine.remainingMs);
+  notify3DEngine(engine.isRunning,engine.isRunning?'running':statusEl.dataset.mode==='complete'?'complete':paused?'paused':'idle');
 });
 
-// 6. Start
-initClockLayout();
-setDuration(0); 
+// Begin with a ready-to-launch 05:00 demonstration, making the physical 3D
+// instrument immediately useful instead of showing a static zero clock.
+setDuration(5*60000);
