@@ -1,4 +1,4 @@
-/* ORION Chrono Core 2.1
+/* ORION Chrono Core 2.2
  * A genuine THREE.js cylindrical timer: the digital display is a CanvasTexture
  * mounted on the body of the 3D apparatus, not an unrelated HTML overlay.
  * Compatible with Three.js r128 included by index.html. No build step.
@@ -30,6 +30,8 @@ window.addEventListener('load', () => {
   // Central engineered shell: dark transparent body with multiple real cylindrical wire lattices.
   const frame = new THREE.Group();
   instrument.add(frame);
+  // Reorient the chronometer so the cylindrical body runs horizontally.
+  frame.rotation.z = Math.PI / 2;
   frame.add(new THREE.Mesh(new THREE.CylinderGeometry(1.97,1.97,6.3,32,1,true),solidDark(0x071c31,.38)));
   const meshGeometry = new THREE.CylinderGeometry(2.08,2.08,6.22,30,11,true);
   frame.add(new THREE.Mesh(meshGeometry, new THREE.MeshBasicMaterial({color:0x3bd7ff,wireframe:true,transparent:true,opacity:.22,depthWrite:false})));
@@ -216,7 +218,7 @@ window.addEventListener('load', () => {
     camera.aspect=w/h;
     const isNarrow=w<490;
     camera.fov=isNarrow?46:40;
-    camera.position.set(isNarrow?5.0:6.5,2.8,isNarrow?16:16.5);
+    camera.position.set(isNarrow?4.4:5.6,isNarrow?2.45:2.7,isNarrow?16.8:17.2);
     camera.lookAt(0,0,0);
     camera.updateProjectionMatrix();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,isNarrow?1.5:2));
@@ -243,8 +245,11 @@ window.addEventListener('load', () => {
       orbitGroup.children[i].rotation.z+=dt*.08*(i%2===0?1:-1)*motion;
     }
     tilt+=(dragX-tilt)*Math.min(1,dt*3);
+    frame.rotation.z=Math.PI/2;
     frame.rotation.y=tilt;
-    frame.position.y=motion*Math.sin(t*.55)*.065;
+    frame.rotation.x=Math.sin(t*.35)*.045*motion;
+    frame.position.y=motion*Math.sin(t*.55)*.03;
+    frame.position.x=motion*Math.sin(t*.42)*.08;
     const ratio=statusData.ratio;
     const pulse=spinning?(1+Math.sin(t*7)*.055):(1+Math.sin(t*1.8)*.025);
     internal.material.opacity=(.045+.11*spinSpeed)*pulse;
