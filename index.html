@@ -11,6 +11,10 @@
 </head>
 <body>
 
+    <!-- 3D Schematic Background -->
+    <canvas id="three-canvas"></canvas>
+    
+    <!-- Particle Background -->
     <canvas id="particles-canvas"></canvas>
 
     <button id="sfx-toggle" aria-label="Toggle Sound">🔊 SFX ON</button>
@@ -30,14 +34,6 @@
     </section>
 
     <main id="clock-stage">
-        
-        <!-- 3D GYROSCOPE HUD -->
-        <div class="hud-wrapper" id="hud-wrapper">
-            <div class="ring ring-outer"><div class="ring-node"></div></div>
-            <div class="ring ring-middle"><div class="ring-node"></div></div>
-            <div class="ring ring-inner"><div class="ring-node"></div></div>
-        </div>
-
         <div class="clock-window">
             <div class="reels-group plus-reels" id="plus-reels"></div>
             <div class="plus-separator hidden" id="plus-separator">+</div>
@@ -52,7 +48,13 @@
     </section>
 
     <input type="hidden" id="hidden-ms-tracker" value="0">
+    
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Scripts -->
     <script src="js/particles-init.js" defer></script>
+    <script src="js/three-bg.js" defer></script>
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
