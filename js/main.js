@@ -1,12 +1,9 @@
-console.log("main.js loaded successfully");
-
 import { decomposeTime } from './core/time.js';
 import { TimerEngine } from './core/engine.js';
 import { setupControls, syncInputBoxes } from './ui/controls.js';
 import { createReelContainer, setReelDigit } from './ui/reels.js';
 import { sfx } from './audio/sfx.js'; 
 
-// DOM Elements
 const plusReels = document.getElementById('plus-reels');
 const baseReels = document.getElementById('base-reels');
 const plusSeparator = document.getElementById('plus-separator');
@@ -16,17 +13,17 @@ const btnReset = document.getElementById('btn-reset');
 const sfxToggleBtn = document.getElementById('sfx-toggle');
 const clockWindow = document.querySelector('.clock-window');
 
-// 1. Initialize the Engine
+// 1. Initialize Engine
 const engine = new TimerEngine(
-    (ms) => updateClockDisplay(ms), // onTick
-    () => {                         // onFinish
+    (ms) => updateClockDisplay(ms), 
+    () => {                         
         btnStart.disabled = false;
         btnPause.disabled = true;
         sfx.playAlarm();
     }
 );
 
-// 2. Build the 3D Reels
+// 2. Build 3D Reels
 function initClockLayout() {
     plusReels.innerHTML = '';
     baseReels.innerHTML = '';
@@ -50,12 +47,9 @@ function initClockLayout() {
     baseReels.appendChild(createReelContainer('ms-tens', ''));
 }
 
-// 3. Update the Visuals
+// 3. Update Visuals
 function updateClockDisplay(ms) {
-    // Update Top Inputs
     syncInputBoxes(ms);
-
-    // Update 3D Clock
     const time = decomposeTime(ms);
 
     setReelDigit('years-tens', Math.floor(time.years / 10), '#ff00ea');
@@ -76,7 +70,6 @@ function updateClockDisplay(ms) {
     setReelDigit('ms-hundreds', Math.floor(time.ms / 100), '#5a7a9e');
     setReelDigit('ms-tens', Math.floor((time.ms % 100) / 10), '#5a7a9e');
 
-    // Toggle Plus Layout
     const hasPlusUnits = time.years > 0 || time.months > 0 || time.weeks > 0;
     plusReels.classList.toggle('hidden', !hasPlusUnits);
     plusSeparator.classList.toggle('hidden', !hasPlusUnits);
@@ -87,12 +80,12 @@ function updateClockDisplay(ms) {
 
 // 4. Setup Controls
 setupControls(
-    (newMs) => engine.setTime(newMs), // When controls change, update engine
-    () => engine.isRunning,           // Pass the running status
+    (newMs) => engine.setTime(newMs), 
+    () => engine.isRunning,           
     sfx
 );
 
-// 5. Button Listeners
+// 5. Buttons
 btnStart.addEventListener('click', () => {
     sfx.init();
     engine.start();
@@ -122,4 +115,4 @@ sfxToggleBtn.addEventListener('click', () => {
 
 // 6. Start
 initClockLayout();
-engine.setTime(0); // Initialize at 0
+engine.setTime(0); 
