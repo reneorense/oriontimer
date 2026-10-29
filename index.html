@@ -11,7 +11,6 @@
 </head>
 <body>
 
-    <!-- Native Particle Canvas -->
     <canvas id="particles-canvas"></canvas>
 
     <button id="sfx-toggle" aria-label="Toggle Sound">🔊 SFX ON</button>
@@ -21,62 +20,13 @@
     </header>
 
     <section class="controls" id="input-controls">
-        <div class="control-group">
-            <label>Years</label>
-            <div class="input-wrapper">
-                <button class="step-btn up" data-unit="years" data-dir="1">▲</button>
-                <input type="text" id="input-years" value="0" inputmode="numeric" aria-label="Years">
-                <button class="step-btn down" data-unit="years" data-dir="-1">▼</button>
-            </div>
-        </div>
-        <div class="control-group">
-            <label>Months</label>
-            <div class="input-wrapper">
-                <button class="step-btn up" data-unit="months" data-dir="1">▲</button>
-                <input type="text" id="input-months" value="0" inputmode="numeric" aria-label="Months">
-                <button class="step-btn down" data-unit="months" data-dir="-1">▼</button>
-            </div>
-        </div>
-        <div class="control-group">
-            <label>Weeks</label>
-            <div class="input-wrapper">
-                <button class="step-btn up" data-unit="weeks" data-dir="1">▲</button>
-                <input type="text" id="input-weeks" value="0" inputmode="numeric" aria-label="Weeks">
-                <button class="step-btn down" data-unit="weeks" data-dir="-1">▼</button>
-            </div>
-        </div>
-        <div class="control-group">
-            <label>Days</label>
-            <div class="input-wrapper">
-                <button class="step-btn up" data-unit="days" data-dir="1">▲</button>
-                <input type="text" id="input-days" value="0" inputmode="numeric" aria-label="Days">
-                <button class="step-btn down" data-unit="days" data-dir="-1">▼</button>
-            </div>
-        </div>
-        <div class="control-group">
-            <label>Hours</label>
-            <div class="input-wrapper">
-                <button class="step-btn up" data-unit="hours" data-dir="1">▲</button>
-                <input type="text" id="input-hours" value="0" inputmode="numeric" aria-label="Hours">
-                <button class="step-btn down" data-unit="hours" data-dir="-1">▼</button>
-            </div>
-        </div>
-        <div class="control-group">
-            <label>Minutes</label>
-            <div class="input-wrapper">
-                <button class="step-btn up" data-unit="minutes" data-dir="1">▲</button>
-                <input type="text" id="input-minutes" value="0" inputmode="numeric" aria-label="Minutes">
-                <button class="step-btn down" data-unit="minutes" data-dir="-1">▼</button>
-            </div>
-        </div>
-        <div class="control-group">
-            <label>Seconds</label>
-            <div class="input-wrapper">
-                <button class="step-btn up" data-unit="seconds" data-dir="1">▲</button>
-                <input type="text" id="input-seconds" value="0" inputmode="numeric" aria-label="Seconds">
-                <button class="step-btn down" data-unit="seconds" data-dir="-1">▼</button>
-            </div>
-        </div>
+        <div class="control-group"><label>Years</label><div class="input-wrapper"><button class="step-btn up" data-unit="years" data-dir="1">▲</button><input type="text" id="input-years" value="0" inputmode="numeric"><button class="step-btn down" data-unit="years" data-dir="-1">▼</button></div></div>
+        <div class="control-group"><label>Months</label><div class="input-wrapper"><button class="step-btn up" data-unit="months" data-dir="1">▲</button><input type="text" id="input-months" value="0" inputmode="numeric"><button class="step-btn down" data-unit="months" data-dir="-1">▼</button></div></div>
+        <div class="control-group"><label>Weeks</label><div class="input-wrapper"><button class="step-btn up" data-unit="weeks" data-dir="1">▲</button><input type="text" id="input-weeks" value="0" inputmode="numeric"><button class="step-btn down" data-unit="weeks" data-dir="-1">▼</button></div></div>
+        <div class="control-group"><label>Days</label><div class="input-wrapper"><button class="step-btn up" data-unit="days" data-dir="1">▲</button><input type="text" id="input-days" value="0" inputmode="numeric"><button class="step-btn down" data-unit="days" data-dir="-1">▼</button></div></div>
+        <div class="control-group"><label>Hours</label><div class="input-wrapper"><button class="step-btn up" data-unit="hours" data-dir="1">▲</button><input type="text" id="input-hours" value="0" inputmode="numeric"><button class="step-btn down" data-unit="hours" data-dir="-1">▼</button></div></div>
+        <div class="control-group"><label>Minutes</label><div class="input-wrapper"><button class="step-btn up" data-unit="minutes" data-dir="1">▲</button><input type="text" id="input-minutes" value="0" inputmode="numeric"><button class="step-btn down" data-unit="minutes" data-dir="-1">▼</button></div></div>
+        <div class="control-group"><label>Seconds</label><div class="input-wrapper"><button class="step-btn up" data-unit="seconds" data-dir="1">▲</button><input type="text" id="input-seconds" value="0" inputmode="numeric"><button class="step-btn down" data-unit="seconds" data-dir="-1">▼</button></div></div>
     </section>
 
     <main id="clock-stage">
@@ -85,6 +35,7 @@
             <div class="ring ring-outer"></div>
             <div class="ring ring-middle"></div>
             <div class="ring ring-inner"></div>
+            <div class="hud-crosshair"></div>
         </div>
 
         <div class="clock-window">
@@ -101,7 +52,6 @@
     </section>
 
     <input type="hidden" id="hidden-ms-tracker" value="0">
-
     <script src="js/particles-init.js" defer></script>
     <script type="module" src="js/main.js"></script>
 </body>
