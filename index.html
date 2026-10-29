@@ -4,117 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ORION's Timer</title>
-    
-    <!-- Sci-Fi Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    
-    <!-- Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-    <!-- SFX Toggle -->
     <button id="sfx-toggle" aria-label="Toggle Sound">🔊 SFX ON</button>
 
-    <!-- Title -->
     <header>
         <h1>ORION's Timer</h1>
     </header>
 
-    <!-- Input Controls (Top Section) -->
     <section class="controls" id="input-controls">
-        <!-- Large Units -->
+        <!-- Controls are hardcoded here for stability -->
         <div class="control-group">
             <label>Years</label>
             <div class="input-wrapper">
                 <button class="step-btn up" data-unit="years" data-dir="1">▲</button>
-                <input type="text" id="input-years" data-unit="years" value="0" inputmode="numeric" aria-label="Years">
+                <input type="text" id="input-years" value="0" inputmode="numeric" aria-label="Years">
                 <button class="step-btn down" data-unit="years" data-dir="-1">▼</button>
             </div>
         </div>
-
         <div class="control-group">
             <label>Months</label>
             <div class="input-wrapper">
                 <button class="step-btn up" data-unit="months" data-dir="1">▲</button>
-                <input type="text" id="input-months" data-unit="months" value="0" inputmode="numeric" aria-label="Months">
+                <input type="text" id="input-months" value="0" inputmode="numeric" aria-label="Months">
                 <button class="step-btn down" data-unit="months" data-dir="-1">▼</button>
             </div>
         </div>
-
         <div class="control-group">
             <label>Weeks</label>
             <div class="input-wrapper">
                 <button class="step-btn up" data-unit="weeks" data-dir="1">▲</button>
-                <input type="text" id="input-weeks" data-unit="weeks" value="0" inputmode="numeric" aria-label="Weeks">
+                <input type="text" id="input-weeks" value="0" inputmode="numeric" aria-label="Weeks">
                 <button class="step-btn down" data-unit="weeks" data-dir="-1">▼</button>
             </div>
         </div>
-
-        <!-- Base Units -->
         <div class="control-group">
             <label>Days</label>
             <div class="input-wrapper">
                 <button class="step-btn up" data-unit="days" data-dir="1">▲</button>
-                <input type="text" id="input-days" data-unit="days" value="0" inputmode="numeric" aria-label="Days">
+                <input type="text" id="input-days" value="0" inputmode="numeric" aria-label="Days">
                 <button class="step-btn down" data-unit="days" data-dir="-1">▼</button>
             </div>
         </div>
-
         <div class="control-group">
             <label>Hours</label>
             <div class="input-wrapper">
                 <button class="step-btn up" data-unit="hours" data-dir="1">▲</button>
-                <input type="text" id="input-hours" data-unit="hours" value="0" inputmode="numeric" aria-label="Hours">
+                <input type="text" id="input-hours" value="0" inputmode="numeric" aria-label="Hours">
                 <button class="step-btn down" data-unit="hours" data-dir="-1">▼</button>
             </div>
         </div>
-
         <div class="control-group">
             <label>Minutes</label>
             <div class="input-wrapper">
                 <button class="step-btn up" data-unit="minutes" data-dir="1">▲</button>
-                <input type="text" id="input-minutes" data-unit="minutes" value="0" inputmode="numeric" aria-label="Minutes">
+                <input type="text" id="input-minutes" value="0" inputmode="numeric" aria-label="Minutes">
                 <button class="step-btn down" data-unit="minutes" data-dir="-1">▼</button>
             </div>
         </div>
-
         <div class="control-group">
             <label>Seconds</label>
             <div class="input-wrapper">
                 <button class="step-btn up" data-unit="seconds" data-dir="1">▲</button>
-                <input type="text" id="input-seconds" data-unit="seconds" value="0" inputmode="numeric" aria-label="Seconds">
+                <input type="text" id="input-seconds" value="0" inputmode="numeric" aria-label="Seconds">
                 <button class="step-btn down" data-unit="seconds" data-dir="-1">▼</button>
             </div>
         </div>
     </section>
 
-    <!-- The 3D Clock Stage (Middle Section) -->
     <main id="clock-stage">
         <div class="clock-window">
-            
-            <!-- Extended Units (Appears on the left) -->
             <div class="reels-group plus-reels" id="plus-reels"></div>
-
-            <!-- The Plus Sign Separator -->
             <div class="plus-separator hidden" id="plus-separator">+</div>
-
-            <!-- Core Units (Days to Milliseconds) -->
             <div class="reels-group base-reels" id="base-reels"></div>
-
         </div>
     </main>
 
-    <!-- Timer Controls (Bottom Section) -->
     <section class="timer-actions">
         <button id="btn-start" class="action-btn primary">START</button>
         <button id="btn-pause" class="action-btn" disabled>PAUSE</button>
         <button id="btn-reset" class="action-btn">RESET</button>
     </section>
 
-    <!-- THIS IS THE MISSING PIECE -->
+    <!-- THIS IS THE SCRIPT TAG -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
