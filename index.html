@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORION's Timer</title>
+    <title>ORION | Mission Timer</title>
+    <meta name="theme-color" content="#030308">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -17,11 +18,30 @@
     <!-- Particle Background -->
     <canvas id="particles-canvas"></canvas>
 
-    <button id="sfx-toggle" aria-label="Toggle Sound">🔊 SFX ON</button>
+    <button id="sfx-toggle" aria-label="Toggle Sound" aria-pressed="true">🔊 SFX ON</button>
 
     <header>
+        <p class="eyebrow">ORION / MISSION CONTROL</p>
         <h1>ORION's Timer</h1>
+        <p class="subtitle">HOLOGRAPHIC COUNTDOWN SYSTEM</p>
     </header>
+
+    <section class="mission-panel" aria-label="Mission presets and status">
+        <div class="mission-overview">
+            <span class="mission-label">MISSION STATUS</span>
+            <span id="mission-status" class="mission-status" role="status" aria-live="polite">AWAITING INPUT</span>
+        </div>
+        <div class="mission-progress" id="mission-progress" role="progressbar" aria-label="Time remaining" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="mission-progress-fill" class="mission-progress-fill"></div>
+        </div>
+        <div class="preset-row" aria-label="Quick timer presets">
+            <span class="preset-label">QUICK LAUNCH</span>
+            <button class="preset-btn" data-minutes="5" type="button">05 MIN</button>
+            <button class="preset-btn" data-minutes="10" type="button">10 MIN</button>
+            <button class="preset-btn" data-minutes="15" type="button">15 MIN</button>
+            <button class="preset-btn" data-minutes="25" type="button">25 MIN</button>
+        </div>
+    </section>
 
     <section class="controls" id="input-controls">
         <div class="control-group"><label>Years</label><div class="input-wrapper"><button class="step-btn up" data-unit="years" data-dir="1">▲</button><input type="text" id="input-years" value="0" inputmode="numeric"><button class="step-btn down" data-unit="years" data-dir="-1">▼</button></div></div>
@@ -42,7 +62,7 @@
     </main>
 
     <section class="timer-actions">
-        <button id="btn-start" class="action-btn primary">START</button>
+        <button id="btn-start" class="action-btn primary" disabled>START</button>
         <button id="btn-pause" class="action-btn" disabled>PAUSE</button>
         <button id="btn-reset" class="action-btn">RESET</button>
     </section>
