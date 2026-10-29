@@ -16,9 +16,15 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
+/* Background moved to html to prevent it from covering the canvas */
+html {
     background-color: var(--bg-color);
     background-image: radial-gradient(circle at center, #0a1020 0%, #030308 100%);
+    min-height: 100vh;
+}
+
+body {
+    background-color: transparent;
     color: #fff;
     font-family: 'Orbitron', sans-serif;
     min-height: 100vh;
@@ -36,8 +42,8 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 1; /* Behind UI */
-    pointer-events: none; /* Click through */
+    z-index: 0; /* Behind everything except html background */
+    pointer-events: none;
 }
 
 /* Push all UI elements above the canvas */
@@ -225,4 +231,4 @@ h1 {
     .controls { grid-template-columns: repeat(3, 1fr); }
     h1 { font-size: 1.5rem; }
     .clock-window.scaled-down { transform: scale(0.5); }
-    }
+}
