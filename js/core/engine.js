@@ -9,13 +9,9 @@ export class TimerEngine {
     }
 
     setTime(ms) {
-        if (this.isRunning) return; // Don't change time while running
+        if (this.isRunning) return;
         this.remainingMs = Math.max(0, ms);
         this.onTick(this.remainingMs);
-    }
-
-    getTime() {
-        return this.remainingMs;
     }
 
     start() {
@@ -38,7 +34,6 @@ export class TimerEngine {
 
     loop() {
         if (!this.isRunning) return;
-        
         const now = performance.now();
         const delta = now - this.lastTime;
         this.lastTime = now;
