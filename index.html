@@ -11,8 +11,8 @@
 </head>
 <body>
 
-    <!-- Particle Background Container -->
-    <div id="particles-js"></div>
+    <!-- Native Particle Canvas -->
+    <canvas id="particles-canvas"></canvas>
 
     <button id="sfx-toggle" aria-label="Toggle Sound">🔊 SFX ON</button>
 
@@ -95,10 +95,9 @@
 
     <input type="hidden" id="hidden-ms-tracker" value="0">
 
-    <!-- Particles.js CDN Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/particlesjs/2.2.3/particles.min.js"></script>
-    <!-- Particles Configuration -->
+    <!-- Native Particle Script -->
     <script src="js/particles-init.js"></script>
+    
     <!-- Main Timer Logic -->
     <script type="module" src="js/main.js"></script>
 </body>
