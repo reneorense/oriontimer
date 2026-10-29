@@ -26,6 +26,7 @@
 
 body {
     background-color: var(--bg-color);
+    background-image: radial-gradient(circle at center, #0a1020 0%, #030308 100%);
     color: #fff;
     font-family: 'Orbitron', sans-serif;
     min-height: 100vh;
@@ -33,7 +34,24 @@ body {
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
-    background-image: radial-gradient(circle at center, #0a1020 0%, #030308 100%);
+    position: relative;
+}
+
+/* --- 1. Particle Background Canvas --- */
+#particles-js {
+    position: absolute; /* absolute so it stays within the body */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Above the background, below the UI */
+    pointer-events: none; /* Allows you to click through it */
+}
+
+/* --- 2. All UI Elements sit above the particles --- */
+#sfx-toggle, header, .controls, #clock-stage, .timer-actions {
+    position: relative;
+    z-index: 10; 
 }
 
 #sfx-toggle {
@@ -148,15 +166,16 @@ h1 {
     align-items: center;
     justify-content: center;
     padding: 30px;
-    background: rgba(5, 10, 20, 0.6);
-    border-top: 2px solid rgba(0, 243, 255, 0.2);
-    border-bottom: 2px solid rgba(0, 243, 255, 0.2);
-    box-shadow: 0 0 50px rgba(0, 243, 255, 0.05), inset 0 0 30px rgba(0, 0, 0, 0.8);
+    background: rgba(5, 10, 20, 0.7);
+    border-top: 2px solid rgba(0, 243, 255, 0.3);
+    border-bottom: 2px solid rgba(0, 243, 255, 0.3);
+    box-shadow: 0 0 50px rgba(0, 243, 255, 0.1), inset 0 0 30px rgba(0, 0, 0, 0.8);
     border-radius: 20px;
     transform-style: preserve-3d;
     min-height: 150px;
     transition: transform 0.3s ease;
     transform-origin: center center;
+    backdrop-filter: blur(5px);
 }
 
 .clock-window.scaled-down {
@@ -280,19 +299,23 @@ h1 {
 
 .hidden { display: none !important; }
 
-@media (max-width: 600px) {
-    .clock-window.scaled-down {
-        transform: scale(0.5);
+/* --- Mobile Responsiveness --- */
+@media (max-width: 800px) {
+    .controls {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); 
+        gap: 8px;
     }
 }
 
-/* --- Particle Background Styling --- */
-#particles-js {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1; /* Keeps it behind the timer UI */
-    pointer-events: none; /* Allows clicks to pass through to buttons */
+@media (max-width: 500px) {
+    .controls {
+        grid-template-columns: repeat(3, 1fr); 
+    }
+    h1 {
+        font-size: 1.5rem;
+    }
+    .clock-window.scaled-down {
+        transform: scale(0.5);
+    }
 }
