@@ -5,11 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#030a13">
   <meta name="description" content="ORION — an interactive three-dimensional holographic mission timer.">
-  <title>ORION // Holographic Chrono Core</title>
+  <title>ORION // Hybrid Mechanical Holographic Chrono Core 2.6</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2.6">
+  <style>
+    /* 2.6: mobile text scaling guard and critical 3D toolbar styles. */
+    html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+    .view-toolbar-label { font: 11px/1.3 'Share Tech Mono',monospace; letter-spacing:1px; }
+    .view-btn, .component-pick { font-size:11px; line-height:1.3; }
+    .part-inspector-top { font:11px/1.35 'Share Tech Mono',monospace; }
+    .part-inspector-body strong { font-size:12px; }
+    .part-inspector-body p { font-size:12px; line-height:1.5; }
+    @media (max-width:760px) {
+      .view-toolbar { padding:12px; }
+      .view-toolbar-label { font-size:11px; }
+      .view-tools { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%;gap:7px; }
+      .view-btn { min-width:0; width:100%; min-height:42px; padding:7px 4px; }
+      .view-btn span { font-size:9px; }
+      .part-inspector { padding:13px; }
+      .part-inspector-body { display:block; }
+      .part-inspector-body strong { font-size:13px; }
+      .part-inspector-body p { margin:6px 0; font-size:12px; }
+      .component-picks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+      .component-pick { width:100%;min-width:0; font-size:11px; }
+    }
+  </style>
 </head>
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
@@ -32,7 +54,7 @@
     <main class="dashboard">
       <div class="page-heading">
         <div class="heading-left"><span class="heading-rule"></span><p>TACTICAL TIME MANAGEMENT <span class="heading-index">// UNIT 07</span></p></div>
-        <span class="heading-trace">HOLOGRAPHIC INSTRUMENT • V 2.4</span>
+        <span class="heading-trace">MECHANICAL CHRONO CORE • V 2.6</span>
       </div>
 
       <div class="workspace">
@@ -53,7 +75,7 @@
           <div class="core-topline"><span>CHRONO CORE <span class="dim">/ 001</span></span><span class="core-top-right"><span class="live-point"></span> LIVE TELEMETRY</span></div>
           <div class="stage" id="chrono-stage">
             <div class="stage-schematic stage-schematic-left" aria-hidden="true"><span>AXIS 01</span><span>Y 034.89</span><span>REACTOR</span></div>
-            <div class="stage-schematic stage-schematic-right" aria-hidden="true"><span>WIRE MESH</span><span>HOLO / 3D</span><span>V.02.4</span></div>
+            <div class="stage-schematic stage-schematic-right" aria-hidden="true"><span>WIRE MESH</span><span>HOLO / 3D</span><span>V.02.6</span></div>
             <div class="stage-corner corner-tl"></div><div class="stage-corner corner-tr"></div>
             <div class="stage-corner corner-bl"></div><div class="stage-corner corner-br"></div>
             <div class="stage-crosshair" aria-hidden="true"></div>
@@ -68,7 +90,7 @@
               </div>
             </div>
             <div class="stage-coordinate top-coordinate">Y <span>07</span> / Z <span>21</span></div>
-            <div class="stage-coordinate bottom-coordinate">HORIZONTAL CHRONO REACTOR <span>—</span> HOLOGRAPHIC ARRAY</div>
+            <div class="stage-coordinate bottom-coordinate">MECHANICAL CHRONO REACTOR <span>—</span> HOLOGRAPHIC ARRAY</div>
           </div>
           <div class="stage-footer"><span class="diamond-symbol">◇</span> INTERACTIVE 3D CHRONO CORE <span class="drag-hint">DRAG • TAP • EXPLORE <span aria-hidden="true">↔</span></span></div>
           <div class="view-toolbar" role="group" aria-label="3D viewer controls">
@@ -135,11 +157,10 @@
   <input type="hidden" id="hidden-ms-tracker" value="0">
   <!-- Pinned vanilla Three.js and GSAP. Graphics gracefully degrade when either CDN is unavailable. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.6/gsap.min.js"></script>
   <script src="js/hologram-material.js" defer></script>
   <script src="js/chrono-animations.js" defer></script>
-  <script src="js/chrono-interaction.js" defer></script>
-  <script src="js/three-bg.js" defer></script>
+  <script src="js/three-bg.js?v=2.6" defer></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
