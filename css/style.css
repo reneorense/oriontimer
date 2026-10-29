@@ -119,6 +119,7 @@ h1 {
 .step-btn:hover { color: var(--neon-cyan); background: #111a2a; }
 .step-btn:active { background: #223; }
 
+/* --- The Clock Stage --- */
 #clock-stage {
     flex-grow: 1;
     display: flex;
@@ -127,7 +128,7 @@ h1 {
     width: 100%;
     padding: 10px;
     perspective: var(--perspective);
-    overflow: visible; /* Changed from auto so rings don't clip */
+    overflow: visible; /* Allows rings to extend past the edges */
     position: relative;
 }
 
@@ -136,8 +137,8 @@ h1 {
     align-items: center;
     justify-content: center;
     padding: 30px;
-    /* Made more transparent so rings show through */
-    background: rgba(5, 10, 20, 0.5); 
+    /* Solid dark background so the rings don't show THROUGH the numbers, only around them */
+    background: #050a14; 
     border-top: 2px solid rgba(0, 243, 255, 0.5);
     border-bottom: 2px solid rgba(0, 243, 255, 0.5);
     box-shadow: 0 0 50px rgba(0, 243, 255, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.8);
@@ -146,7 +147,6 @@ h1 {
     min-height: 150px;
     transition: transform 0.3s ease;
     transform-origin: center center;
-    backdrop-filter: blur(5px);
     z-index: 5; /* Above the rings */
 }
 
@@ -226,13 +226,6 @@ h1 {
 .action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .hidden { display: none !important; }
 
-@media (max-width: 800px) { .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; } }
-@media (max-width: 500px) {
-    .controls { grid-template-columns: repeat(3, 1fr); }
-    h1 { font-size: 1.5rem; }
-    .clock-window.scaled-down { transform: scale(0.5); }
-}
-
 /* --- HOLOGRAPHIC HUD RINGS --- */
 .hud-wrapper {
     position: absolute;
@@ -242,11 +235,11 @@ h1 {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    z-index: 1; /* Behind clock window (z-index 5) */
+    z-index: 1; /* Behind clock window, above background */
     display: flex;
     justify-content: center;
     align-items: center;
-    opacity: 0.7;
+    opacity: 0.8;
     transition: opacity 0.5s ease;
 }
 
@@ -255,53 +248,60 @@ h1 {
 .ring {
     position: absolute;
     border-radius: 50%;
-    /* Changed tilt to 65deg so the rings are thicker and more visible */
     transform: rotateX(65deg); 
-    border: 4px solid transparent; /* Much thicker border */
+    border: 2px solid transparent; 
 }
 
 .ring-outer {
-    width: 500px;
-    height: 500px;
-    border-top: 4px solid var(--neon-magenta);
-    border-bottom: 4px dashed var(--neon-magenta);
-    box-shadow: 0 0 40px rgba(255, 0, 234, 0.4), inset 0 0 40px rgba(255, 0, 234, 0.4);
+    width: 80vw; /* Wraps around the whole screen width */
+    max-width: 650px;
+    height: 80vw;
+    max-height: 650px;
+    border-top: 2px solid var(--neon-magenta);
+    border-bottom: 6px dashed var(--neon-magenta);
+    box-shadow: 0 0 40px rgba(255, 0, 234, 0.3), inset 0 0 40px rgba(255, 0, 234, 0.3);
     animation: spin 15s linear infinite;
 }
 
 .ring-middle {
-    width: 380px;
-    height: 380px;
-    border-left: 6px dotted var(--neon-cyan);
-    border-right: 6px solid var(--neon-cyan);
-    box-shadow: 0 0 40px rgba(0, 243, 255, 0.4), inset 0 0 40px rgba(0, 243, 255, 0.4);
+    width: 60vw;
+    max-width: 480px;
+    height: 60vw;
+    max-height: 480px;
+    border-left: 8px dotted var(--neon-cyan);
+    border-right: 3px solid var(--neon-cyan);
+    box-shadow: 0 0 40px rgba(0, 243, 255, 0.3), inset 0 0 40px rgba(0, 243, 255, 0.3);
     animation: spin-reverse 10s linear infinite;
 }
 
 .ring-inner {
-    width: 260px;
-    height: 260px;
-    border: 3px solid var(--neon-amber);
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid var(--neon-amber);
-    box-shadow: 0 0 30px rgba(255, 184, 0, 0.4), inset 0 0 30px rgba(255, 184, 0, 0.4);
+    width: 40vw;
+    max-width: 320px;
+    height: 40vw;
+    max-height: 320px;
+    border: 2px solid var(--neon-amber);
+    border-top: 10px solid transparent;
+    border-bottom: 4px solid var(--neon-amber);
+    box-shadow: 0 0 30px rgba(255, 184, 0, 0.3), inset 0 0 30px rgba(255, 184, 0, 0.3);
     animation: spin 5s linear infinite;
 }
 
 /* Crosshair lines in the center */
 .hud-crosshair {
     position: absolute;
-    width: 600px;
-    height: 600px;
-    border: 1px dashed rgba(0, 243, 255, 0.2);
+    width: 90vw;
+    max-width: 700px;
+    height: 90vw;
+    max-height: 700px;
+    border: 1px dashed rgba(0, 243, 255, 0.15);
     border-radius: 50%;
     transform: rotateX(65deg);
 }
 
 /* When the timer is running, spin faster */
-.hud-wrapper.active .ring-outer { animation-duration: 4s; }
-.hud-wrapper.active .ring-middle { animation-duration: 2s; }
-.hud-wrapper.active .ring-inner { animation-duration: 1s; }
+.hud-wrapper.active .ring-outer { animation-duration: 4s; border-color: #fff; }
+.hud-wrapper.active .ring-middle { animation-duration: 2s; border-color: #fff; }
+.hud-wrapper.active .ring-inner { animation-duration: 1s; border-color: #fff; }
 
 @keyframes spin {
     0% { transform: rotateX(65deg) rotateZ(0deg); }
@@ -313,10 +313,9 @@ h1 {
     100% { transform: rotateX(65deg) rotateZ(0deg); }
 }
 
-/* Scale rings down on mobile so they fit the screen */
-@media (max-width: 600px) {
-    .ring-outer { width: 320px; height: 320px; }
-    .ring-middle { width: 240px; height: 240px; }
-    .ring-inner { width: 160px; height: 160px; }
-    .hud-crosshair { width: 380px; height: 380px; }
+@media (max-width: 800px) { .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; } }
+@media (max-width: 500px) {
+    .controls { grid-template-columns: repeat(3, 1fr); }
+    h1 { font-size: 1.5rem; }
+    .clock-window.scaled-down { transform: scale(0.5); }
 }
