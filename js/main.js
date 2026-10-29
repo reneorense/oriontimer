@@ -1,19 +1,12 @@
 console.log("main.js loaded successfully");
 
-import { decomposeTime, composeTime, MS_IN_SEC, MS_IN_MIN, MS_IN_HR, MS_IN_DAY, MS_IN_WEEK, MS_IN_MONTH, MS_IN_YEAR } from './core/time.js';
+import { decomposeTime } from './core/time.js';
+import { TimerEngine } from './core/engine.js';
+import { setupControls, syncInputBoxes } from './ui/controls.js';
 import { createReelContainer, setReelDigit } from './ui/reels.js';
 import { sfx } from './audio/sfx.js'; 
 
-let totalMs = 0;
-let isRunning = false;
-let lastTime = 0;
-let rafId = null;
-
-const UNIT_MULTIPLIERS = {
-    years: MS_IN_YEAR, months: MS_IN_MONTH, weeks: MS_IN_WEEK,
-    days: MS_IN_DAY, hours: MS_IN_HR, minutes: MS_IN_MIN, seconds: MS_IN_SEC
-};
-
+// DOM Elements
 const plusReels = document.getElementById('plus-reels');
 const baseReels = document.getElementById('base-reels');
 const plusSeparator = document.getElementById('plus-separator');
@@ -23,6 +16,17 @@ const btnReset = document.getElementById('btn-reset');
 const sfxToggleBtn = document.getElementById('sfx-toggle');
 const clockWindow = document.querySelector('.clock-window');
 
+// 1. Initialize the Engine
+const engine = new TimerEngine(
+    (ms) => updateClockDisplay(ms), // onTick
+    () => {                         // onFinish
+        btnStart.disabled = false;
+        btnPause.disabled = true;
+        sfx.playAlarm();
+    }
+);
+
+// 2. Build the 3D Reels
 function initClockLayout() {
     plusReels.innerHTML = '';
     baseReels.innerHTML = '';
@@ -46,16 +50,13 @@ function initClockLayout() {
     baseReels.appendChild(createReelContainer('ms-tens', ''));
 }
 
-function syncFromTotalMs() {
-    const time = decomposeTime(totalMs);
+// 3. Update the Visuals
+function updateClockDisplay(ms) {
+    // Update Top Inputs
+    syncInputBoxes(ms);
 
-    document.getElementById('input-years').value = time.years;
-    document.getElementById('input-months').value = time.months;
-    document.getElementById('input-weeks').value = time.weeks;
-    document.getElementById('input-days').value = time.days;
-    document.getElementById('input-hours').value = time.hours;
-    document.getElementById('input-minutes').value = time.minutes;
-    document.getElementById('input-seconds').value = time.seconds;
+    // Update 3D Clock
+    const time = decomposeTime(ms);
 
     setReelDigit('years-tens', Math.floor(time.years / 10), '#ff00ea');
     setReelDigit('years-ones', time.years % 10, '#ff00ea');
@@ -72,114 +73,53 @@ function syncFromTotalMs() {
     setReelDigit('minutes-ones', time.minutes % 10, '#00ff66');
     setReelDigit('seconds-tens', Math.floor(time.seconds / 10), '#00f3ff');
     setReelDigit('seconds-ones', time.seconds % 10, '#00f3ff');
-    
     setReelDigit('ms-hundreds', Math.floor(time.ms / 100), '#5a7a9e');
     setReelDigit('ms-tens', Math.floor((time.ms % 100) / 10), '#5a7a9e');
 
+    // Toggle Plus Layout
     const hasPlusUnits = time.years > 0 || time.months > 0 || time.weeks > 0;
     plusReels.classList.toggle('hidden', !hasPlusUnits);
     plusSeparator.classList.toggle('hidden', !hasPlusUnits);
     
-    if (hasPlusUnits) {
-        clockWindow.classList.add('scaled-down');
-    } else {
-        clockWindow.classList.remove('scaled-down');
-    }
+    if (hasPlusUnits) clockWindow.classList.add('scaled-down');
+    else clockWindow.classList.remove('scaled-down');
 }
 
-// BUTTON LISTENERS
-document.querySelectorAll('.step-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        console.log("Arrow clicked!", e.target.dataset.unit, e.target.dataset.dir);
-        sfx.init(); 
-        if (isRunning) return;
-        
-        const unit = e.target.dataset.unit;
-        const dir = parseInt(e.target.dataset.dir);
-        
-        sfx.playTick(); 
-        totalMs = Math.max(0, totalMs + (dir * UNIT_MULTIPLIERS[unit]));
-        syncFromTotalMs(); 
-    });
+// 4. Setup Controls
+setupControls(
+    (newMs) => engine.setTime(newMs), // When controls change, update engine
+    () => engine.isRunning,           // Pass the running status
+    sfx
+);
+
+// 5. Button Listeners
+btnStart.addEventListener('click', () => {
+    sfx.init();
+    engine.start();
+    btnStart.disabled = true;
+    btnPause.disabled = false;
 });
 
-document.querySelectorAll('.input-wrapper input').forEach(input => {
-    input.addEventListener('change', () => {
-        console.log("Input box changed");
-        if (isRunning) return;
-        
-        const newTimeObj = {
-            years: parseInt(document.getElementById('input-years').value) || 0,
-            months: parseInt(document.getElementById('input-months').value) || 0,
-            weeks: parseInt(document.getElementById('input-weeks').value) || 0,
-            days: parseInt(document.getElementById('input-days').value) || 0,
-            hours: parseInt(document.getElementById('input-hours').value) || 0,
-            minutes: parseInt(document.getElementById('input-minutes').value) || 0,
-            seconds: parseInt(document.getElementById('input-seconds').value) || 0
-        };
+btnPause.addEventListener('click', () => {
+    engine.pause();
+    btnStart.disabled = false;
+    btnPause.disabled = true;
+});
 
-        totalMs = composeTime(newTimeObj);
-        syncFromTotalMs();
-    });
+btnReset.addEventListener('click', () => {
+    sfx.init();
+    engine.reset();
+    btnStart.disabled = false;
+    btnPause.disabled = true;
 });
 
 sfxToggleBtn.addEventListener('click', () => {
-    console.log("SFX toggled");
     sfx.init();
     const isEnabled = sfx.toggle();
     sfxToggleBtn.textContent = isEnabled ? '🔊 SFX ON' : '🔇 SFX OFF';
     sfxToggleBtn.style.color = isEnabled ? 'var(--neon-cyan)' : '#666';
 });
 
-function tick(now) {
-    if (!isRunning) return;
-    if (!lastTime) lastTime = now;
-    const delta = now - lastTime;
-    lastTime = now;
-
-    totalMs = Math.max(0, totalMs - delta);
-    syncFromTotalMs();
-
-    if (totalMs > 0) {
-        rafId = requestAnimationFrame(tick);
-    } else {
-        isRunning = false;
-        btnStart.disabled = false;
-        btnPause.disabled = true;
-        sfx.playAlarm(); 
-    }
-}
-
-btnStart.addEventListener('click', () => {
-    console.log("START clicked");
-    sfx.init();
-    if (totalMs === 0) return;
-    isRunning = true;
-    lastTime = 0;
-    btnStart.disabled = true;
-    btnPause.disabled = false;
-    rafId = requestAnimationFrame(tick);
-});
-
-btnPause.addEventListener('click', () => {
-    console.log("PAUSE clicked");
-    isRunning = false;
-    cancelAnimationFrame(rafId);
-    btnStart.disabled = false;
-    btnPause.disabled = true;
-});
-
-btnReset.addEventListener('click', () => {
-    console.log("RESET clicked");
-    sfx.init();
-    isRunning = false;
-    cancelAnimationFrame(rafId);
-    totalMs = 0;
-    syncFromTotalMs();
-    btnStart.disabled = false;
-    btnPause.disabled = true;
-});
-
-// Start everything up
+// 6. Start
 initClockLayout();
-syncFromTotalMs();
+engine.setTime(0); // Initialize at 0
