@@ -12,6 +12,29 @@ const btnPause = document.getElementById('btn-pause');
 const btnReset = document.getElementById('btn-reset');
 const sfxToggleBtn = document.getElementById('sfx-toggle');
 const clockWindow = document.querySelector('.clock-window');
+const missionStatus = document.getElementById('mission-status');
+const missionProgress = document.getElementById('mission-progress');
+const missionProgressFill = document.getElementById('mission-progress-fill');
+let initialDurationMs = 0;
+let completed = false;
+
+function setStatus(text, mode = 'idle') {
+    missionStatus.textContent = text;
+    missionStatus.dataset.mode = mode;
+}
+
+function setDuration(ms) {
+    // Only idle/paused countdowns can be edited. A fresh duration becomes the baseline.
+    if (engine.isRunning) return;
+    initialDurationMs = Math.max(0, ms);
+    completed = false;
+    engine.setTime(initialDurationMs);
+    setStatus(initialDurationMs > 0 ? 'MISSION READY' : 'AWAITING INPUT', 'idle');
+    btnStart.disabled = initialDurationMs <= 0;
+    btnPause.disabled = true;
+    notify3DEngine(false);
+}
+
 
 // Function to notify the 3D engine of state changes
 function notify3DEngine(isRunning) {
@@ -23,8 +46,10 @@ function notify3DEngine(isRunning) {
 const engine = new TimerEngine(
     (ms) => updateClockDisplay(ms), 
     () => {                         
-        btnStart.disabled = false;
+        completed = true;
+        btnStart.disabled = true;
         btnPause.disabled = true;
+        setStatus('MISSION COMPLETE', 'complete');
         sfx.playAlarm();
         notify3DEngine(false); // Stop 3D spin
     }
@@ -57,6 +82,12 @@ function initClockLayout() {
 // 3. Update Visuals
 function updateClockDisplay(ms) {
     syncInputBoxes(ms);
+    const progress = initialDurationMs > 0 ? Math.max(0, Math.min(1, ms / initialDurationMs)) : 0;
+    missionProgressFill.style.transform = `scaleX(${progress})`;
+    missionProgress.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
+    window.dispatchEvent(new CustomEvent('timerProgress', {
+        detail: { remainingMs: ms, totalMs: initialDurationMs, progress }
+    }));
     const time = decomposeTime(ms);
 
     setReelDigit('years-tens', Math.floor(time.years / 10), '#ff00ea');
@@ -87,7 +118,7 @@ function updateClockDisplay(ms) {
 
 // 4. Setup Controls
 setupControls(
-    (newMs) => engine.setTime(newMs), 
+    (newMs) => setDuration(newMs), 
     () => engine.isRunning,           
     sfx
 );
@@ -95,24 +126,30 @@ setupControls(
 // 5. Buttons
 btnStart.addEventListener('click', () => {
     sfx.init();
-    engine.start();
+    if (!engine.start()) return;
+    completed = false;
     btnStart.disabled = true;
     btnPause.disabled = false;
+    setStatus('MISSION ACTIVE', 'running');
     notify3DEngine(true); // Trigger 3D spin up
 });
 
 btnPause.addEventListener('click', () => {
     engine.pause();
-    btnStart.disabled = false;
+    btnStart.disabled = engine.remainingMs <= 0;
     btnPause.disabled = true;
+    setStatus('MISSION PAUSED', 'paused');
     notify3DEngine(false); // Trigger 3D slow down
 });
 
 btnReset.addEventListener('click', () => {
     sfx.init();
     engine.reset();
-    btnStart.disabled = false;
+    initialDurationMs = 0;
+    completed = false;
+    btnStart.disabled = true;
     btnPause.disabled = true;
+    setStatus('AWAITING INPUT', 'idle');
     notify3DEngine(false); // Trigger 3D slow down
 });
 
@@ -120,9 +157,20 @@ sfxToggleBtn.addEventListener('click', () => {
     sfx.init();
     const isEnabled = sfx.toggle();
     sfxToggleBtn.textContent = isEnabled ? '🔊 SFX ON' : '🔇 SFX OFF';
+    sfxToggleBtn.setAttribute('aria-pressed', String(isEnabled));
     sfxToggleBtn.style.color = isEnabled ? 'var(--neon-cyan)' : '#666';
+});
+
+// Quick presets are separate from the fine-grained time controls.
+document.querySelectorAll('.preset-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        if (engine.isRunning) return;
+        sfx.init();
+        sfx.playTick();
+        setDuration(Number(button.dataset.minutes) * 60 * 1000);
+    });
 });
 
 // 6. Start
 initClockLayout();
-engine.setTime(0); 
+setDuration(0); 

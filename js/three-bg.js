@@ -10,9 +10,16 @@ window.addEventListener('load', () => {
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 20;
 
-    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    let renderer;
+    try {
+        renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: window.innerWidth >= 720 });
+    } catch (error) {
+        console.warn('ORION: WebGL is unavailable; the 2D timer remains usable.', error);
+        return;
+    }
+    const pixelRatioCap = window.innerWidth < 768 ? 1.5 : 2;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     // 2. Create the Wireframe Schematics Group
     const schematicGroup = new THREE.Group();
@@ -21,6 +28,7 @@ window.addEventListener('load', () => {
     const matCyan = new THREE.MeshBasicMaterial({ color: 0x00f3ff, wireframe: true, transparent: true, opacity: 0.3 });
     const matMagenta = new THREE.MeshBasicMaterial({ color: 0xff00ea, wireframe: true, transparent: true, opacity: 0.2 });
     const matAmber = new THREE.MeshBasicMaterial({ color: 0xffb800, wireframe: true, transparent: true, opacity: 0.15 });
+    const matGlow = new THREE.MeshBasicMaterial({ color: 0x00d8ff, transparent: true, opacity: 0.13, blending: THREE.AdditiveBlending, depthWrite: false });
 
     // A. The Collider Rings (Steam Pump / Gyroscope tubes)
     const ringGeo1 = new THREE.TorusGeometry(8, 0.2, 16, 100);
@@ -37,6 +45,8 @@ window.addEventListener('load', () => {
     // B. The Hedron Core (Geometric diamond)
     const coreGeo = new THREE.IcosahedronGeometry(3, 1); // Level 1 detail
     const core = new THREE.Mesh(coreGeo, matCyan);
+    // A translucent secondary core adds depth without expensive post-processing.
+    const innerCore = new THREE.Mesh(new THREE.IcosahedronGeometry(2.2, 1), matGlow);
 
     // C. Outer Casing (Sparse wireframe)
     const cageGeo = new THREE.OctahedronGeometry(12, 0);
@@ -46,9 +56,35 @@ window.addEventListener('load', () => {
     schematicGroup.add(ring2);
     schematicGroup.add(ring3);
     schematicGroup.add(core);
+    schematicGroup.add(innerCore);
     schematicGroup.add(cage);
     
     scene.add(schematicGroup);
+
+    // Countdown-driven arc: the arc shrinks as time passes, with no geometry rebuilding.
+    const progressSegments = 240;
+    const arcPoints = new Float32Array((progressSegments + 1) * 3);
+    const progressRadius = 8.35;
+    for (let i = 0; i <= progressSegments; i++) {
+        const angle = -Math.PI / 2 + (i / progressSegments) * Math.PI * 2;
+        arcPoints[i * 3] = Math.cos(angle) * progressRadius;
+        arcPoints[i * 3 + 1] = Math.sin(angle) * progressRadius;
+        arcPoints[i * 3 + 2] = 1;
+    }
+    const progressGeometry = new THREE.BufferGeometry();
+    progressGeometry.setAttribute('position', new THREE.BufferAttribute(arcPoints, 3));
+    progressGeometry.setDrawRange(0, 0);
+    const progressArc = new THREE.Line(progressGeometry, new THREE.LineBasicMaterial({
+        color: 0x78f4ff, transparent: true, opacity: 0.95, depthTest: false
+    }));
+    progressArc.renderOrder = 2;
+    scene.add(progressArc);
+
+    window.addEventListener('timerProgress', (event) => {
+        const ratio = Math.min(1, Math.max(0, Number(event.detail.progress) || 0));
+        progressGeometry.setDrawRange(0, ratio > 0 ? Math.max(2, Math.round(progressSegments * ratio) + 1) : 0);
+        core.scale.setScalar(0.92 + 0.12 * ratio);
+    });
 
     // 3. Animation State
     let speedMultiplier = 0.5; // Base idle speed
@@ -61,11 +97,18 @@ window.addEventListener('load', () => {
 
     // 4. Render Loop
     const clock = new THREE.Clock();
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function scaleScene() {
+        const scale = Math.min(1, Math.max(0.42, window.innerWidth / 980, window.innerHeight / 690));
+        schematicGroup.scale.setScalar(scale);
+        progressArc.scale.setScalar(scale);
+    }
+    scaleScene();
 
     function animate() {
         requestAnimationFrame(animate);
         
-        const elapsedTime = clock.getElapsedTime();
+        const elapsedTime = reducedMotion ? 0 : clock.getElapsedTime();
         
         // Smoothly transition the speed
         speedMultiplier += (targetSpeed - speedMultiplier) * 0.05;
@@ -86,9 +129,9 @@ window.addEventListener('load', () => {
         cage.rotation.x = elapsedTime * 0.05 * speedMultiplier;
 
         // Gently float the whole group
-        schematicGroup.position.y = Math.sin(elapsedTime * 0.5) * 1;
-
-        renderer.render(scene, camera);
+        schematicGroup.position.y = reducedMotion ? 0 : Math.sin(elapsedTime * 0.5) * 0.65;
+        innerCore.rotation.y = elapsedTime * -0.3 * speedMultiplier;
+        if (document.visibilityState !== 'hidden') renderer.render(scene, camera);
     }
 
     animate();
@@ -97,6 +140,8 @@ window.addEventListener('load', () => {
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.5 : 2));
         renderer.setSize(window.innerWidth, window.innerHeight);
+        scaleScene();
     });
 });
