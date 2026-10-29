@@ -1,263 +1,319 @@
-/* ORION Chrono Core 2.2
- * A genuine THREE.js cylindrical timer: the digital display is a CanvasTexture
- * mounted on the body of the 3D apparatus, not an unrelated HTML overlay.
- * Compatible with Three.js r128 included by index.html. No build step.
+/* ORION Chrono Core 2.3 — Horizontal Holographic Edition
+ * The horizontal machine and its upright display are separate children of one
+ * inspectable instrument. Neither the display nor its digits receive roll.
+ * Three.js r128, plain JavaScript, GitHub Pages compatible, no build step.
  */
 window.addEventListener('load', () => {
+  'use strict';
   const stage = document.getElementById('chrono-stage');
   const canvas = document.getElementById('three-canvas');
   if (!stage || !canvas || typeof THREE === 'undefined') return;
 
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true, powerPreference:'default'});
-  } catch (error) {
-    console.warn('ORION: WebGL unavailable; showing schematic fallback.', error);
+    renderer = new THREE.WebGLRenderer({canvas,alpha:true,antialias:window.innerWidth>=700,powerPreference:'default'});
+  } catch (err) {
+    console.warn('ORION: 3D unavailable; keeping accessible 2D schematic.',err);
     return;
   }
-
+  renderer.setClearColor(0x000000,0);
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(37,1,0.1,100);
   const instrument = new THREE.Group();
   scene.add(instrument);
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const clearCyan = 0x45e7ff, softCyan = 0x167cb3, blue = 0x238cff;
-  const cyan = (opacity=.8, color=clearCyan) => new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,side:THREE.DoubleSide});
-  const lineMat = (opacity=.6, color=clearCyan) => new THREE.LineBasicMaterial({color,transparent:true,opacity,depthWrite:false});
-  const solidDark = (color=0x06182a,opacity=1) => new THREE.MeshBasicMaterial({color,transparent:opacity<1,opacity,side:THREE.DoubleSide});
+  const C = {cyan:0x70f4ff, glow:0x16dfff,blue:0x258af8, dark:0x071524, pale:0xe9ffff, warning:0xffaf61};
+  const matte = (color, opacity=1) => new THREE.MeshBasicMaterial({color,transparent:opacity<1,opacity,side:THREE.DoubleSide,depthWrite:opacity===1});
+  const glowMat = (color=C.cyan,opacity=.8) => new THREE.MeshBasicMaterial({color,transparent:true,opacity,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
+  const lineMat = (color=C.cyan,opacity=.5) => new THREE.LineBasicMaterial({color,transparent:true,opacity,depthWrite:false});
+  const torus = (radius,tube,y,material) => {
+    const mesh=new THREE.Mesh(new THREE.TorusGeometry(radius,tube,10,96),material);
+    mesh.rotation.x=Math.PI/2;mesh.position.y=y;return mesh;
+  };
+  const cylinder=(radius,height,material,radial=40,vertical=1,open=true)=>new THREE.Mesh(
+    new THREE.CylinderGeometry(radius,radius,height,radial,vertical,open),material
+  );
 
-  // Central engineered shell: dark transparent body with multiple real cylindrical wire lattices.
-  const frame = new THREE.Group();
-  instrument.add(frame);
-  // Reorient the chronometer so the cylindrical body runs horizontally.
-  frame.rotation.z = Math.PI / 2;
-  frame.add(new THREE.Mesh(new THREE.CylinderGeometry(1.97,1.97,6.3,32,1,true),solidDark(0x071c31,.38)));
-  const meshGeometry = new THREE.CylinderGeometry(2.08,2.08,6.22,30,11,true);
-  frame.add(new THREE.Mesh(meshGeometry, new THREE.MeshBasicMaterial({color:0x3bd7ff,wireframe:true,transparent:true,opacity:.22,depthWrite:false})));
-  const internal = new THREE.Mesh(new THREE.CylinderGeometry(1.58,1.58,5.75,30,1,true),cyan(.045,0x15c7ef));
-  frame.add(internal);
+  // All cylindrical geometry is created along its LOCAL Y axis then turned
+  // sideways. The screen is NOT a child of this rotated group.
+  const machine = new THREE.Group();
+  machine.rotation.z = -Math.PI/2;
+  instrument.add(machine);
+  const casing = new THREE.Group(); machine.add(casing);
+  const shell = cylinder(1.76,7.0,matte(0x07213b,.32),40,1,true);
+  casing.add(shell);
+  casing.add(new THREE.LineSegments(
+    new THREE.WireframeGeometry(new THREE.CylinderGeometry(1.83,1.83,6.96,32,13,true)),
+    lineMat(0x45ceff,.27)
+  ));
+  const hologram = window.ORIONHologram && window.ORIONHologram.create({color:C.glow,opacity:.44,scanDensity:23});
+  const shimmer = cylinder(1.88,6.75,hologram ? hologram.material : glowMat(C.glow,.09),48,1,true);
+  casing.add(shimmer);
+  const interior=cylinder(1.19,6.6,glowMat(0x18adf1,.035),32,1,true);
+  casing.add(interior);
+  // Radial structural rods, running lengthwise through the translucent shell.
+  for(let i=0;i<18;i++) {
+    const theta=i*Math.PI*2/18;
+    const x=Math.cos(theta)*1.9,z=Math.sin(theta)*1.9;
+    const thick=i%3===0;
+    const beam=cylinder(thick?.041:.018,6.88,glowMat(thick?0x4dd9ff:0x2d91c0,thick?.67:.39),7);
+    beam.position.set(x,0,z);casing.add(beam);
+  }
+  // End caps and machined collars.
+  for(const side of [-1,1]) {
+    const y=3.47*side;
+    const endCylinder=cylinder(1.78,.29,matte(0x09263e,.98),48,1,false);
+    endCylinder.position.y=y; casing.add(endCylinder);
+    for(const [r,t,dy,color,op] of [
+      [2.08,.105,3.38,0x55e7ff,.96],
+      [2.03,.035,3.62,0x259aff,.92],
+      [1.83,.04,3.69,0x7afaff,.92],
+      [1.38,.045,3.72,0x3bb2eb,.71],
+      [2.10,.029,3.08,0x38ccef,.75]
+    ])casing.add(torus(r,t,dy*side,glowMat(color,op)));
+    const grid = cylinder(1.77,.302,
+      new THREE.MeshBasicMaterial({color:0x31e2ff,wireframe:true,transparent:true,opacity:.19,depthWrite:false}),30,1,false);
+    grid.position.y=y;casing.add(grid);
+  }
+  for(const y of [-2.7,-2.05,0,2.05,2.7]){
+    casing.add(torus(1.98,.023,y,glowMat(y===0?C.cyan:C.blue,y===0?.83:.43)));
+  }
 
-  // The vertical machined rails and internal beam braces are separate 3D objects.
-  const railGeometry = new THREE.CylinderGeometry(.037,.037,6.25,6);
-  const darkRailGeometry = new THREE.CylinderGeometry(.085,.085,6.42,8);
-  for(let i=0;i<16;i++){
-    const angle=i*Math.PI*2/16;
-    const x=Math.cos(angle)*2.12,z=Math.sin(angle)*2.12;
-    const rail = new THREE.Mesh(i%4===0?darkRailGeometry:railGeometry,
-      i%4===0?cyan(.65,0x3c9fd8):cyan(.32,0x2ad9ff));
-    rail.position.set(x,0,z);frame.add(rail);
-    if(i%4===0){
-      const bright = new THREE.Mesh(new THREE.CylinderGeometry(.017,.017,5.9,6),cyan(.83,0x75edff));
-      bright.position.set(x,0,z);frame.add(bright);
+  // Mechanical hoops spin around the horizontal axis; they never roll the screen.
+  const rotor=new THREE.Group();machine.add(rotor);
+  for(const y of [-2.65,-1.95,1.95,2.65]) {
+    rotor.add(torus(1.96,.07,y,glowMat(y>0?0x349dea:0x5af5ff,.77)));
+    for(let j=0;j<18;j++) {
+      const a=j*Math.PI/9;
+      const tooth=new THREE.Mesh(new THREE.BoxGeometry(.13,.23,.17),glowMat(j%3?0x187eac:0x8cf9ff,j%3?.43:.94));
+      tooth.position.set(Math.cos(a)*1.96,y,Math.sin(a)*1.96);
+      tooth.rotation.y=-a;rotor.add(tooth);
     }
   }
-  // Concentric collars mechanically close the cylinder at the upper and lower ends.
-  function torus(radius,tube,y,material){
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(radius,tube,9,96),material);
-    ring.rotation.x=Math.PI/2;ring.position.y=y;return ring;
-  }
-  for(const side of [-1,1]){
-    for(const [radius,tube,offset,opacity,color] of [
-      [2.28,.09,3.21,.97,0x75eaff],
-      [2.21,.025,3.42,.85,0x31b9e6],
-      [1.88,.035,3.4,.95,0x1981f6],
-      [2.19,.075,2.92,.57,0x1d97cc],
-      [2.26,.016,2.68,.82,0x40eeff]]){
-      frame.add(torus(radius,tube,offset*side,cyan(opacity,color)));
+  // Two illuminated mechanical collar assemblies can "unlock" during startup.
+  const leftClamp=new THREE.Group(),rightClamp=new THREE.Group();
+  leftClamp.position.x=-2.56;rightClamp.position.x=2.56;
+  instrument.add(leftClamp,rightClamp);
+  for(const clamp of [leftClamp,rightClamp]) {
+    const collar=torus(2.08,.09,0,glowMat(0x75f7ff,.9));
+    collar.rotation.z=Math.PI/2;collar.rotation.x=0;
+    // Torus default axis is Z. After rotation above, its face is perpendicular X.
+    clamp.add(collar);
+    for(let i=0;i<8;i++) {
+      const a=i*Math.PI/4;
+      const bolt=new THREE.Mesh(new THREE.BoxGeometry(.20,.16,.18),matte(0x178fc0,.90));
+      bolt.position.set(0,Math.cos(a)*2.08,Math.sin(a)*2.08);clamp.add(bolt);
     }
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(1.96,1.96,.17,40),solidDark(0x092c45,.95));
-    cap.position.y=side*3.32;frame.add(cap);
-    const capGrid = new THREE.Mesh(new THREE.CylinderGeometry(1.93,1.93,.19,24,1,false),new THREE.MeshBasicMaterial({color:0x33dfff,wireframe:true,transparent:true,opacity:.45}));
-    capGrid.position.y=side*3.32;frame.add(capGrid);
-    frame.add(torus(1.04,.022,side*3.45,cyan(.7)));
   }
-  for(const y of [-2.1,-1.58,1.57,2.08]){
-    frame.add(torus(2.18,.025,y,cyan(.51,y<0?0x31e7ff:0x319cd9)));
+  // Internal spiraling coolant / electrical traces.
+  const helix=new THREE.Group();machine.add(helix);
+  for(let k=0;k<6;k++){
+    const pts=[];
+    for(let j=0;j<=170;j++) {
+      const u=j/170,a=5*Math.PI*u+k*Math.PI/3;
+      pts.push(Math.cos(a)*1.38,-3.03+6.06*u,Math.sin(a)*1.38);
+    }
+    const geom=new THREE.BufferGeometry();geom.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
+    helix.add(new THREE.Line(geom,lineMat(k%2?0x45afff:0x62eaff,.27)));
   }
+  // Reactor lattice and axial energy shaft.
+  const reactor=new THREE.Group();machine.add(reactor);
+  const coreMat=new THREE.MeshBasicMaterial({color:C.glow,wireframe:true,transparent:true,opacity:.6,depthWrite:false});
+  const core=new THREE.Mesh(new THREE.IcosahedronGeometry(1.12,2),coreMat);
+  reactor.add(core);
+  reactor.add(new THREE.Mesh(new THREE.IcosahedronGeometry(.79,2),glowMat(0x39dcff,.1)));
+  const axial = cylinder(.25,5.85,glowMat(0x44dfff,.22),14);
+  reactor.add(axial);
+  for(const y of [-1.5,0,1.5])reactor.add(torus(1.17,.022,y,glowMat(C.cyan,.48)));
 
-  // Machine ribs: twisting lattice inside the cylinder creates visible depth.
-  const helices=new THREE.Group();frame.add(helices);
-  for(let helix=0;helix<4;helix++){
-    const xyz=[];
-    for(let j=0;j<=170;j++){
-      const u=j/170,angle=6*Math.PI*u+helix*Math.PI/2;
-      xyz.push(Math.cos(angle)*1.68,-2.68+u*5.36,Math.sin(angle)*1.68);
-    }
-    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(xyz,3));
-    helices.add(new THREE.Line(geo,lineMat(.3,helix%2?0x2375ef:0x3ae7ff)));
-  }
-  // Rotating independent mechanical drum / hoops around the core.
-  const rotor=new THREE.Group();frame.add(rotor);
-  for(const y of [-2.33,2.33]){
-    const hoop=torus(1.86,.068,y,cyan(.9,0x37c0f7));rotor.add(hoop);
-    for(let j=0;j<16;j++){
-      const angle=j*Math.PI/8;
-      const bar=new THREE.Mesh(new THREE.BoxGeometry(.12,.3,.13),cyan(.75,j%4?0x168ccc:0x92f9ff));
-      bar.position.set(Math.cos(angle)*1.86,y,Math.sin(angle)*1.86);
-      bar.rotation.y=-angle;rotor.add(bar);
-    }
-  }
-  // Reactor core behind the display, visible above and below it.
-  const energyCore=new THREE.Group();frame.add(energyCore);
-  const coreMesh=new THREE.Mesh(new THREE.IcosahedronGeometry(1.34,1),new THREE.MeshBasicMaterial({color:0x0da6e6,wireframe:true,transparent:true,opacity:.65}));
-  energyCore.add(coreMesh);
-  energyCore.add(new THREE.Mesh(new THREE.IcosahedronGeometry(.96,2),cyan(.13,0x2fe2ff)));
-  for(const radius of [1.33,1.56]){
-    const ring=torus(radius,.017,0,cyan(.64,0x37caff));ring.rotation.x=Math.PI/2+.26;energyCore.add(ring);
-  }
-
-  // Circular progress segments around the outer machine's lower collar.
-  const progressBars=[];
+  // 64 real circumferential charge lamps, depleted in countdown order.
+  const chargeSegments=[];
   for(let i=0;i<64;i++){
-    const theta=i*2*Math.PI/64;
-    const material=cyan(.26,0x23729b);
-    const segment=new THREE.Mesh(new THREE.BoxGeometry(.17,.28,.085),material);
-    segment.position.set(Math.sin(theta)*2.3,-2.42,Math.cos(theta)*2.3);
-    segment.rotation.y=theta;
-    frame.add(segment);progressBars.push(material);
-  }
-  // Several circular rotating wire tracks provide a machinery/gyroscope silhouette.
-  const orbitGroup=new THREE.Group();frame.add(orbitGroup);
-  for(let i=0;i<3;i++){
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(2.29,.018,6,120),cyan(.38,i===1?blue:clearCyan));
-    ring.rotation.set(.34+i*.52,i*.35,.1+i*.19);
-    orbitGroup.add(ring);
-  }
-  // Four small metallic clamp structures support a *real 3D mounted screen*.
-  const mount = new THREE.Group();mount.position.set(0,.05,2.28);frame.add(mount);
-  mount.add(new THREE.Mesh(new THREE.BoxGeometry(4.53,1.48,.18),solidDark(0x06111c,.98)));
-  mount.add(new THREE.Mesh(new THREE.BoxGeometry(4.59,1.55,.08),cyan(.13,0x33caff)));
-  const screenEdge= new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(4.65,1.63,.1)),lineMat(.92,0x61f3ff));
-  screenEdge.position.z=.05;mount.add(screenEdge);
-  for(const x of [-2.22,2.22]){
-    for(const y of [-.68,.68]){
-      const rivet = new THREE.Mesh(new THREE.SphereGeometry(.065,7,7),cyan(.85,0x9aefff));
-      rivet.position.set(x,y,.17);mount.add(rivet);
-    }
+    const a=i*Math.PI*2/64;
+    const material=glowMat(0x48eaff,.95);
+    const segment=new THREE.Mesh(new THREE.BoxGeometry(.14,.26,.08),material);
+    segment.position.set(Math.sin(a)*2.08,-2.96,Math.cos(a)*2.08);
+    segment.rotation.y=a;machine.add(segment);chargeSegments.push(material);
   }
 
-  // CanvasTexture updates the illuminated clock digits *on the physical 3D screen*.
-  const screenCanvas=document.createElement('canvas');screenCanvas.width=1024;screenCanvas.height=360;
-  const ctx=screenCanvas.getContext('2d');
+  // Soft photographic halo without requiring heavy bloom post-processing.
+  const auraCanvas=document.createElement('canvas');auraCanvas.width=auraCanvas.height=128;
+  const auraCtx=auraCanvas.getContext('2d');
+  if(auraCtx){
+    const g=auraCtx.createRadialGradient(64,64,3,64,64,64);
+    g.addColorStop(0,'rgba(105,239,255,.7)');g.addColorStop(.22,'rgba(31,187,255,.28)');g.addColorStop(1,'rgba(0,100,255,0)');
+    auraCtx.fillStyle=g;auraCtx.fillRect(0,0,128,128);
+  }
+  const glowTexture = new THREE.CanvasTexture(auraCanvas);
+  const aura = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture,color:0x48daff,transparent:true,opacity:.26,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false}));
+  aura.scale.set(9.2,4.5,1);aura.position.z=-.15;instrument.add(aura);
+  const flashes = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture,color:C.cyan,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false}));
+  flashes.scale.set(8.6,4.6,1);flashes.position.z=.3;instrument.add(flashes);
+  // Sparse floating charge particles INSIDE the machine (not a page background).
+  const particleCount=55;
+  const particleArray=new Float32Array(particleCount*3);
+  const seed=[];
+  for(let i=0;i<particleCount;i++){
+    const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*1.55,y=(Math.random()-.5)*6.3;
+    seed.push({a,r,y});
+    particleArray[i*3]=y;particleArray[i*3+1]=Math.cos(a)*r;particleArray[i*3+2]=Math.sin(a)*r;
+  }
+  const particleGeometry=new THREE.BufferGeometry();
+  particleGeometry.setAttribute('position',new THREE.BufferAttribute(particleArray,3));
+  const particleCloud=new THREE.Points(particleGeometry,new THREE.PointsMaterial({color:0x8cedff,size:.07,transparent:true,opacity:.78,depthWrite:false,blending:THREE.AdditiveBlending}));
+  instrument.add(particleCloud);
+
+  // Independent front-facing screen: mounted to the same instrument but never
+  // under the sideways rotation. The digits always remain left-to-right.
+  const screenMount=new THREE.Group();
+  screenMount.position.set(0,.05,2.22);instrument.add(screenMount);
+  const bezel=new THREE.Mesh(new THREE.BoxGeometry(5.35,1.70,.22),matte(0x030b17,.98));
+  screenMount.add(bezel);
+  const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(5.42,1.77,.23)),lineMat(C.cyan,.93));
+  screenMount.add(edge);
+  const screenBorder=new THREE.Mesh(new THREE.PlaneGeometry(5.12,1.52),glowMat(0x24d8ff,.15));
+  screenBorder.position.z=.13;screenMount.add(screenBorder);
+  for(const x of [-2.55,2.55])for(const y of [-.73,.73]){
+    const rivet=new THREE.Mesh(new THREE.SphereGeometry(.045,7,7),glowMat(0xb9ffff,.96));
+    rivet.position.set(x,y,.15);screenMount.add(rivet);
+  }
+  const displayCanvas=document.createElement('canvas');displayCanvas.width=1024;displayCanvas.height=330;
+  const ctx=displayCanvas.getContext('2d');
   if(!ctx) return;
-  const screenTexture=new THREE.CanvasTexture(screenCanvas);
-  screenTexture.minFilter=THREE.LinearFilter;
-  screenTexture.magFilter=THREE.LinearFilter;
-  const screen=new THREE.Mesh(new THREE.PlaneGeometry(4.37,1.34),new THREE.MeshBasicMaterial({map:screenTexture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
-  screen.position.z=.18;mount.add(screen);
-  const accent=torus(2.3,.04,.05,cyan(.82));accent.rotation.x=Math.PI/2;frame.add(accent);
+  const displayTexture=new THREE.CanvasTexture(displayCanvas);
+  displayTexture.minFilter=THREE.LinearFilter;displayTexture.magFilter=THREE.LinearFilter;
+  const face=new THREE.Mesh(new THREE.PlaneGeometry(5.14,1.53),new THREE.MeshBasicMaterial({map:displayTexture,transparent:true,depthWrite:false,depthTest:false}));
+  face.position.z=.145;face.renderOrder=30;screenMount.add(face);
 
-  const statusData={time:'00:00',state:'idle',ratio:0};
-  function drawDisplay(){
-    const w=screenCanvas.width,h=screenCanvas.height;
+  const status={time:'05:00',ratio:1,remainingMs:300000,state:'idle'};
+  function paintDisplay(){
+    const w=1024,h=330;
     ctx.clearRect(0,0,w,h);
-    const fill=ctx.createLinearGradient(0,0,w,0);
-    fill.addColorStop(0,'#061a29');fill.addColorStop(.5,'#09283c');fill.addColorStop(1,'#041222');
-    ctx.fillStyle=fill;ctx.fillRect(0,0,w,h);
-    ctx.fillStyle='rgba(78,236,255,.042)';for(let x=0;x<w;x+=24)ctx.fillRect(x,0,1,h);
-    ctx.fillStyle='rgba(104,214,247,.045)';for(let y=0;y<h;y+=9)ctx.fillRect(0,y,w,1);
-    ctx.strokeStyle='#247e9b';ctx.lineWidth=2;ctx.strokeRect(8,8,w-16,h-16);
-    ctx.fillStyle='#5eb1d1';ctx.textAlign='left';ctx.font='22px Share Tech Mono,monospace';ctx.fillText('ORION / TEMPORAL ARRAY',34,46);
-    ctx.textAlign='right';ctx.fillStyle='#69dff0';ctx.fillText('CHRONO-01',w-30,46);
-    const urgent=statusData.state==='running'&&statusData.ratio<.10;
-    const textColor=urgent?'#ffcc78':statusData.state==='complete'?'#8bffb9':'#d6fbff';
-    const glowColor=urgent?'#ff9739':'#31eaff';
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    let fontSize=156;
-    do{ctx.font=`700 ${fontSize}px Share Tech Mono,monospace`;fontSize-=3;}while(ctx.measureText(statusData.time).width>900&&fontSize>60);
-    ctx.shadowColor=glowColor;ctx.shadowBlur=37;ctx.fillStyle=textColor;
-    ctx.fillText(statusData.time,w/2,184);ctx.shadowBlur=0;
-    ctx.fillStyle='#6cd5e9';ctx.font='20px Share Tech Mono,monospace';
-    ctx.fillText(statusData.state==='complete'?'MISSION COMPLETE':statusData.state==='running'?'COUNTDOWN IN PROGRESS':statusData.state==='paused'?'CHRONO CORE SUSPENDED':'COUNTDOWN SYSTEM ARMED',w/2,309);
-    ctx.fillStyle='#184961';ctx.fillRect(30,337,w-60,5);
-    ctx.fillStyle=urgent?'#ffbf70':'#3feaff';ctx.fillRect(30,337,(w-60)*statusData.ratio,5);
-    screenTexture.needsUpdate=true;
+    const g=ctx.createLinearGradient(0,0,w,h);
+    g.addColorStop(0,'#04131f');g.addColorStop(.5,'#092c40');g.addColorStop(1,'#03101c');
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='rgba(80,220,255,.055)';
+    for(let y=6;y<h;y+=8)ctx.fillRect(0,y,w,1);
+    ctx.strokeStyle='#2088a6';ctx.lineWidth=2;ctx.strokeRect(7,7,w-14,h-14);
+    ctx.textBaseline='alphabetic';ctx.font='21px Share Tech Mono,monospace';
+    ctx.textAlign='left';ctx.fillStyle='#7dd6ed';ctx.fillText('ORION / CHRONO UNIT',28,40);
+    ctx.textAlign='right';ctx.fillStyle='#63caeb';ctx.fillText('MODULE 2.3',w-28,40);
+    const urgent=status.state==='running'&&status.remainingMs>0&&status.remainingMs<=10000;
+    const color=urgent?'#ffcf91':status.state==='complete'?'#a2ffbf':'#eaffff';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor=urgent?'#ff912d':'#20d9ff';ctx.shadowBlur=27;
+    let size=202;
+    do{ctx.font=`700 ${size}px Share Tech Mono,monospace`;if(ctx.measureText(status.time).width<900||size<=63)break;size-=4;}while(true);
+    ctx.fillStyle=color;ctx.fillText(status.time,w/2,169);
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#63bad9';ctx.font='20px Share Tech Mono,monospace';
+    const statusText = status.state==='running'?'COUNTDOWN IN PROGRESS':status.state==='paused'?'SYSTEM ON HOLD':status.state==='complete'?'MISSION COMPLETE':'CHRONO SYSTEM ARMED';
+    ctx.fillText(statusText,w/2,282);
+    ctx.fillStyle='#17445b';ctx.fillRect(30,310,w-60,7);
+    ctx.fillStyle=urgent?'#ffbb74':'#53edff';ctx.fillRect(30,310,(w-60)*status.ratio,7);
+    displayTexture.needsUpdate=true;
   }
-  drawDisplay();
-
-  let spinning=false,completed=false;
-  function updateProgress(detail){
-    statusData.ratio=Math.min(1,Math.max(0,Number(detail.progress)||0));
-    if(typeof detail.display==='string'&&detail.display!==statusData.time){
-      statusData.time=detail.display;
-      drawDisplay();
+  paintDisplay();
+  let running=false,completed=false,spin=0;
+  const motion=window.ORIONMotion&&window.ORIONMotion.create({instrument,screen:screenMount,glow:aura,flash:flashes,leftClamp,rightClamp},reducedMotion);
+  if(motion)motion.initialize();
+  let lastLit = -1;
+  function applyProgress(detail={}){
+    const previousRatio=status.ratio;
+    const wasUrgent=running&&status.remainingMs>0&&status.remainingMs<=10000;
+    const nextRatio=Math.max(0,Math.min(1,Number(detail.progress)||0));
+    const nextTime=typeof detail.display==='string'?detail.display:status.time;
+    const nextRemaining=Math.max(0,Number(detail.remainingMs)||0);
+    status.ratio=nextRatio;
+    status.time=nextTime;
+    status.remainingMs=nextRemaining;
+    const urgent=running&&status.remainingMs>0&&status.remainingMs<=10000;
+    // Repaint high-resolution clock texture only when a readable value, a
+    // 1%-charge step, or urgency changes (not on every requestAnimationFrame).
+    if(nextTime!==lastDrawnTime||Math.floor(previousRatio*100)!==Math.floor(nextRatio*100)||wasUrgent!==urgent){
+      paintDisplay();lastDrawnTime=nextTime;
     }
-    progressBars.forEach((material,index)=>{
-      const charged=index/64<statusData.ratio;
-      const urgent=spinning&&statusData.ratio<.1;
-      material.color.setHex(charged?(urgent?0xffb15b:0x4de6ff):0x17516e);
-      material.opacity=charged?.95:.19;
-    });
-    if(completed){statusData.state='complete';drawDisplay();}
+    const lit=Math.round(64*status.ratio);
+    if(lit!==lastLit||wasUrgent!==urgent){
+      chargeSegments.forEach((m,i)=>{
+        const active=i<lit;
+        m.color.setHex(active?(urgent?C.warning:C.cyan):0x18415a);
+        m.opacity=active?.96:.12;
+      });
+      lastLit=lit;
+    }
   }
-  window.addEventListener('timerProgress',e=>updateProgress(e.detail||{}));
-  window.addEventListener('timerStateChanged',e=>{
-    spinning=Boolean(e.detail&&e.detail.isRunning);
-    completed=Boolean(e.detail&&e.detail.isComplete);
-    statusData.state=completed?'complete':spinning?'running':e.detail&&e.detail.isPaused?'paused':'idle';
-    drawDisplay();
+  let lastDrawnTime=status.time;
+  window.addEventListener('timerProgress',event=>applyProgress(event.detail));
+  window.addEventListener('timerStateChanged',event=>{
+    const d=event.detail||{};
+    running=Boolean(d.isRunning);completed=Boolean(d.isComplete);
+    status.state=completed?'complete':running?'running':d.isPaused?'paused':'idle';
+    paintDisplay();
+    if(motion)motion.change(status.state);
   });
 
-  // The 3D renderer is initialized on window.load, after module scripts may
-  // have already sent the initial 05:00 state. Ask the timer to replay it.
+  // Resync after timer main.js was initialized earlier.
   window.dispatchEvent(new CustomEvent('orion3DReady'));
 
-  let dragX=0,tilt=0,previousX=0,dragging=false;
-  canvas.addEventListener('pointerdown',e=>{dragging=true;previousX=e.clientX;canvas.setPointerCapture(e.pointerId);});
+  // Mouse/touch drag gently turns the ENTIRE gadget in 3D without rolling digits.
+  let dragging=false,lastX=0,lastY=0,targetYaw=0,targetPitch=0;
+  canvas.style.touchAction='pan-y';
+  canvas.addEventListener('pointerdown',e=>{
+    dragging=true;lastX=e.clientX;lastY=e.clientY;
+    if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);
+  });
   canvas.addEventListener('pointermove',e=>{
     if(!dragging||reducedMotion)return;
-    const delta=e.clientX-previousX;previousX=e.clientX;
-    dragX=Math.max(-.58,Math.min(.58,dragX+delta*.004));
+    targetYaw=Math.max(-.42,Math.min(.42,targetYaw+(e.clientX-lastX)*.0045));
+    targetPitch=Math.max(-.16,Math.min(.16,targetPitch+(e.clientY-lastY)*.0018));
+    lastX=e.clientX;lastY=e.clientY;
   });
   canvas.addEventListener('pointerup',()=>dragging=false);
   canvas.addEventListener('pointercancel',()=>dragging=false);
+  canvas.addEventListener('lostpointercapture',()=>dragging=false);
 
   function resize(){
     const w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);
+    const narrow=w<510;
     camera.aspect=w/h;
-    const isNarrow=w<490;
-    camera.fov=isNarrow?46:40;
-    camera.position.set(isNarrow?4.4:5.6,isNarrow?2.45:2.7,isNarrow?16.8:17.2);
-    camera.lookAt(0,0,0);
-    camera.updateProjectionMatrix();
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,isNarrow?1.5:2));
+    camera.fov=narrow?38:36;
+    camera.position.set(narrow?2.1:2.4,narrow?1.15:1.20,narrow?17.8:14.2);
+    camera.lookAt(0,0,0);camera.updateProjectionMatrix();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,narrow?1.5:2));
     renderer.setSize(w,h,false);
   }
   resize();window.addEventListener('resize',resize);
   if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(stage);
-  // Fallback only hides once WebGL is actually initialized.
   stage.classList.add('webgl-ready');
-
-  const clock=new THREE.Clock();let spinSpeed=0;
+  const clock=new THREE.Clock();
   function render(){
     requestAnimationFrame(render);
+    const dt=Math.min(.05,clock.getDelta());
     if(document.hidden)return;
-    const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
-    spinSpeed+=( (spinning?1:0)-spinSpeed )*Math.min(1,dt*2.3);
-    const motion=reducedMotion?0:1;
-    rotor.rotation.y+=dt*(.13+spinSpeed*.95)*motion;
-    helices.rotation.y-=dt*(.045+spinSpeed*.12)*motion;
-    energyCore.rotation.y+=dt*(.17+spinSpeed*.7)*motion;
-    energyCore.rotation.x+=dt*.045*motion;
-    orbitGroup.rotation.y+=dt*(.14+spinSpeed*.19)*motion;
-    for(let i=0;i<orbitGroup.children.length;i++){
-      orbitGroup.children[i].rotation.z+=dt*.08*(i%2===0?1:-1)*motion;
-    }
-    tilt+=(dragX-tilt)*Math.min(1,dt*3);
-    frame.rotation.z=Math.PI/2;
-    frame.rotation.y=tilt;
-    frame.rotation.x=Math.sin(t*.35)*.045*motion;
-    frame.position.y=motion*Math.sin(t*.55)*.03;
-    frame.position.x=motion*Math.sin(t*.42)*.08;
-    const ratio=statusData.ratio;
-    const pulse=spinning?(1+Math.sin(t*7)*.055):(1+Math.sin(t*1.8)*.025);
-    internal.material.opacity=(.045+.11*spinSpeed)*pulse;
-    coreMesh.material.opacity=(.4+.35*spinSpeed)*pulse;
-    if(spinning&&ratio<.1){
-      coreMesh.material.color.setHex(0xffad5c);
-    }else{
-      coreMesh.material.color.setHex(0x14c5f4);
+    const t=clock.elapsedTime;
+    const animate=reducedMotion?0:1;
+    spin+=( (running?1:0)-spin)*Math.min(1,dt*2.25);
+    rotor.rotation.y+=dt*(.085+spin*1.12)*animate;
+    helix.rotation.y-=dt*(.065+spin*.39)*animate;
+    reactor.rotation.y+=dt*(.18+spin*.43)*animate;
+    core.rotation.z+=dt*.075*animate;
+    instrument.rotation.y+=(targetYaw-instrument.rotation.y)*Math.min(1,dt*6);
+    instrument.rotation.x+=(targetPitch-instrument.rotation.x)*Math.min(1,dt*6);
+    instrument.position.y=animate*Math.sin(t*.62)*.035;
+    const urgent=running&&status.remainingMs>0&&status.remainingMs<=10000;
+    const charge=.4+spin*.35+(urgent?.2:0);
+    if(hologram){hologram.update(t,charge);hologram.setColor(urgent?C.warning:C.glow);}
+    coreMat.color.setHex(urgent?C.warning:C.glow);
+    coreMat.opacity=(.46+spin*.23)*(1+Math.sin(t*(urgent?8:2.3))*.065*animate);
+    interior.material.opacity=.032+spin*.09;
+    if(!reducedMotion){
+      const attr=particleGeometry.attributes.position;
+      for(let i=0;i<particleCount;i++){
+        const p=seed[i],a=p.a+t*(.07+spin*.3),x=((p.y+t*(.14+spin*.26)+3.15)%6.3)-3.15;
+        attr.setXYZ(i,x,Math.cos(a)*p.r,Math.sin(a)*p.r);
+      }
+      attr.needsUpdate=true;
     }
     renderer.render(scene,camera);
   }
