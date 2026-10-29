@@ -1,24 +1,16 @@
-import { decomposeTime, MS_IN_SEC, MS_IN_MIN, MS_IN_HR, MS_IN_DAY, MS_IN_WEEK, MS_IN_MONTH, MS_IN_YEAR } from './core/time.js';
+import { decomposeTime, composeTime, MS_IN_SEC, MS_IN_MIN, MS_IN_HR, MS_IN_DAY, MS_IN_WEEK, MS_IN_MONTH, MS_IN_YEAR } from './core/time.js';
 import { createReelContainer, setReelDigit } from './ui/reels.js';
 
-// --- State ---
 let totalMs = 0;
 let isRunning = false;
 let lastTime = 0;
 let rafId = null;
 
-// Multipliers for the input steppers
 const UNIT_MULTIPLIERS = {
-    years: MS_IN_YEAR,
-    months: MS_IN_MONTH,
-    weeks: MS_IN_WEEK,
-    days: MS_IN_DAY,
-    hours: MS_IN_HR,
-    minutes: MS_IN_MIN,
-    seconds: MS_IN_SEC
+    years: MS_IN_YEAR, months: MS_IN_MONTH, weeks: MS_IN_WEEK,
+    days: MS_IN_DAY, hours: MS_IN_HR, minutes: MS_IN_MIN, seconds: MS_IN_SEC
 };
 
-// DOM Elements
 const plusReels = document.getElementById('plus-reels');
 const baseReels = document.getElementById('base-reels');
 const plusSeparator = document.getElementById('plus-separator');
@@ -26,12 +18,11 @@ const btnStart = document.getElementById('btn-start');
 const btnPause = document.getElementById('btn-pause');
 const btnReset = document.getElementById('btn-reset');
 
-// --- 1. Build the Reels ---
+// --- 1. Build Reels ---
 function initClockLayout() {
     plusReels.innerHTML = '';
     baseReels.innerHTML = '';
 
-    // Build Plus Reels (Years, Months, Weeks)
     plusReels.appendChild(createReelContainer('years-tens', 'YRS'));
     plusReels.appendChild(createReelContainer('years-ones', ''));
     plusReels.appendChild(createReelContainer('months-tens', 'MOS'));
@@ -39,29 +30,33 @@ function initClockLayout() {
     plusReels.appendChild(createReelContainer('weeks-tens', 'WKS'));
     plusReels.appendChild(createReelContainer('weeks-ones', ''));
 
-    // Build Base Reels (Days, Hours, Minutes, Seconds, MS)
     baseReels.appendChild(createReelContainer('days-tens', 'DAYS'));
     baseReels.appendChild(createReelContainer('days-ones', ''));
-    
     baseReels.appendChild(createReelContainer('hours-tens', 'HRS'));
     baseReels.appendChild(createReelContainer('hours-ones', ''));
-    
     baseReels.appendChild(createReelContainer('minutes-tens', 'MIN'));
     baseReels.appendChild(createReelContainer('minutes-ones', ''));
-    
     baseReels.appendChild(createReelContainer('seconds-tens', 'SEC'));
     baseReels.appendChild(createReelContainer('seconds-ones', ''));
-
-    // MS (Only showing the hundreds and tens for visual speed)
     baseReels.appendChild(createReelContainer('ms-hundreds', 'MS'));
     baseReels.appendChild(createReelContainer('ms-tens', ''));
 }
 
-// --- 2. Render Logic ---
-function updateClockDisplay() {
+// --- 2. The Master Sync Function ---
+function syncFromTotalMs() {
+    // 1. Calculate the time breakdown
     const time = decomposeTime(totalMs);
 
-    // Plus Reels
+    // 2. Update ALL Input Boxes (This fixes the rollover issue)
+    document.getElementById('input-years').value = time.years;
+    document.getElementById('input-months').value = time.months;
+    document.getElementById('input-weeks').value = time.weeks;
+    document.getElementById('input-days').value = time.days;
+    document.getElementById('input-hours').value = time.hours;
+    document.getElementById('input-minutes').value = time.minutes;
+    document.getElementById('input-seconds').value = time.seconds;
+
+    // 3. Update the 3D Clock
     setReelDigit('years-tens', Math.floor(time.years / 10), '#ff00ea');
     setReelDigit('years-ones', time.years % 10, '#ff00ea');
     setReelDigit('months-tens', Math.floor(time.months / 10), '#ff00ea');
@@ -69,7 +64,6 @@ function updateClockDisplay() {
     setReelDigit('weeks-tens', Math.floor(time.weeks / 10), '#ff00ea');
     setReelDigit('weeks-ones', time.weeks % 10, '#ff00ea');
 
-    // Base Reels
     setReelDigit('days-tens', Math.floor(time.days / 10), '#ffb800');
     setReelDigit('days-ones', time.days % 10, '#ffb800');
     setReelDigit('hours-tens', Math.floor(time.hours / 10), '#00ff66');
@@ -79,48 +73,58 @@ function updateClockDisplay() {
     setReelDigit('seconds-tens', Math.floor(time.seconds / 10), '#00f3ff');
     setReelDigit('seconds-ones', time.seconds % 10, '#00f3ff');
     
-    // Milliseconds (Math.floor(time.ms / 10) gives us the 2-digit display)
     setReelDigit('ms-hundreds', Math.floor(time.ms / 100), '#5a7a9e');
     setReelDigit('ms-tens', Math.floor((time.ms % 100) / 10), '#5a7a9e');
 
-    // Toggle "+" Block visibility based on if there are any weeks/months/years
+    // 4. Toggle Plus Block
     const hasPlusUnits = time.years > 0 || time.months > 0 || time.weeks > 0;
     plusReels.classList.toggle('hidden', !hasPlusUnits);
     plusSeparator.classList.toggle('hidden', !hasPlusUnits);
 }
 
-// --- 3. Input Steppers ---
+// --- 3. Event Listeners for Inputs ---
 document.querySelectorAll('.step-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        if (isRunning) return; // Prevent changes while running
-
+        if (isRunning) return;
         const unit = e.target.dataset.unit;
         const dir = parseInt(e.target.dataset.dir);
-        const multiplier = UNIT_MULTIPLIERS[unit];
+        
+        // Add/subtract milliseconds
+        totalMs = Math.max(0, totalMs + (dir * UNIT_MULTIPLIERS[unit]));
+        syncFromTotalMs(); // Sync EVERYTHING
+    });
+});
 
-        // Add or subtract the exact millisecond value of that unit
-        totalMs = Math.max(0, totalMs + (dir * multiplier));
+// Listen for manual typing in the boxes
+document.querySelectorAll('.input-wrapper input').forEach(input => {
+    input.addEventListener('change', (e) => {
+        if (isRunning) return;
         
-        // Update the input field visually
-        const timeObj = decomposeTime(totalMs);
-        document.getElementById(`input-${unit}`).value = timeObj[unit];
-        
-        updateClockDisplay();
+        // Read all boxes, compile them into an object, and re-calculate totalMs
+        const newTimeObj = {
+            years: parseInt(document.getElementById('input-years').value) || 0,
+            months: parseInt(document.getElementById('input-months').value) || 0,
+            weeks: parseInt(document.getElementById('input-weeks').value) || 0,
+            days: parseInt(document.getElementById('input-days').value) || 0,
+            hours: parseInt(document.getElementById('input-hours').value) || 0,
+            minutes: parseInt(document.getElementById('input-minutes').value) || 0,
+            seconds: parseInt(document.getElementById('input-seconds').value) || 0
+        };
+
+        totalMs = composeTime(newTimeObj);
+        syncFromTotalMs(); // This will normalize "120 minutes" back into 2 hours!
     });
 });
 
 // --- 4. Timer Engine ---
 function tick(now) {
     if (!isRunning) return;
-
     if (!lastTime) lastTime = now;
     const delta = now - lastTime;
     lastTime = now;
 
     totalMs = Math.max(0, totalMs - delta);
-    
-    // Update the display
-    updateClockDisplay();
+    syncFromTotalMs();
 
     if (totalMs > 0) {
         rafId = requestAnimationFrame(tick);
@@ -128,7 +132,6 @@ function tick(now) {
         isRunning = false;
         btnStart.disabled = false;
         btnPause.disabled = true;
-        // Future: Trigger alarm sound here
     }
 }
 
@@ -153,15 +156,11 @@ btnReset.addEventListener('click', () => {
     isRunning = false;
     cancelAnimationFrame(rafId);
     totalMs = 0;
-    
-    // Reset input fields
-    document.querySelectorAll('.input-wrapper input').forEach(input => input.value = 0);
-    
-    updateClockDisplay();
+    syncFromTotalMs();
     btnStart.disabled = false;
     btnPause.disabled = true;
 });
 
 // --- Init ---
 initClockLayout();
-updateClockDisplay();
+syncFromTotalMs();
