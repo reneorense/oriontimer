@@ -1,8 +1,11 @@
 // Native Custom Particle System
 window.addEventListener('load', () => {
-    console.log("Native particle engine loaded!");
+    console.log("Particle engine started!");
     const canvas = document.getElementById('particles-canvas');
-    if (!canvas) return;
+    if (!canvas) {
+        console.error("Canvas element not found!");
+        return;
+    }
 
     const ctx = canvas.getContext('2d');
     let width, height;
@@ -22,7 +25,7 @@ window.addEventListener('load', () => {
         constructor() {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            this.vx = (Math.random() - 0.5) * 1.5; // speed
+            this.vx = (Math.random() - 0.5) * 1.5; 
             this.vy = (Math.random() - 0.5) * 1.5;
             this.radius = Math.random() * 2 + 1.5;
             this.color = colors[Math.floor(Math.random() * colors.length)];
@@ -32,7 +35,6 @@ window.addEventListener('load', () => {
             this.x += this.vx;
             this.y += this.vy;
 
-            // Bounce off edges
             if (this.x < 0 || this.x > width) this.vx *= -1;
             if (this.y < 0 || this.y > height) this.vy *= -1;
         }
@@ -41,15 +43,12 @@ window.addEventListener('load', () => {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = this.color;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = this.color;
-            ctx.fill();
-            ctx.shadowBlur = 0; // Reset shadow for lines
+            ctx.fill(); // Removed shadow blur for mobile performance
         }
     }
 
-    // Create particles (adjust number for density)
-    const particleCount = window.innerWidth < 768 ? 40 : 80;
+    // Create particles
+    const particleCount = window.innerWidth < 768 ? 30 : 70;
     for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
     }
@@ -57,13 +56,12 @@ window.addEventListener('load', () => {
     function animate() {
         ctx.clearRect(0, 0, width, height);
 
-        // Update and draw particles
         particles.forEach(p => {
             p.update();
             p.draw();
         });
 
-        // Draw lines between close particles
+        // Draw connecting lines
         ctx.lineWidth = 0.5;
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
@@ -80,9 +78,9 @@ window.addEventListener('load', () => {
                 }
             }
         }
-
         requestAnimationFrame(animate);
     }
 
     animate();
+    console.log("Particles animating successfully!");
 });
