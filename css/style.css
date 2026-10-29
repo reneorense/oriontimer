@@ -156,6 +156,13 @@ h1 {
     border-radius: 20px;
     transform-style: preserve-3d;
     min-height: 150px;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+}
+
+/* Scales the clock down if weeks/months/years are added */
+.clock-window.scaled-down {
+    transform: scale(0.75);
 }
 
 .reels-group {
@@ -236,7 +243,7 @@ h1 {
 /* --- Action Buttons --- */
 .timer-actions {
     display: flex;
-    flex-wrap: wrap; /* FIX: Allows wrapping on mobile */
+    flex-wrap: wrap; 
     justify-content: center;
     gap: 15px;
     margin-top: 2vh;
@@ -257,6 +264,8 @@ h1 {
     cursor: pointer;
     transition: all 0.2s;
     letter-spacing: 2px;
+    flex: 1; 
+    max-width: 140px; /* Prevents buttons from getting too wide on mobile */
 }
 
 .action-btn.primary {
@@ -274,3 +283,10 @@ h1 {
 .action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .hidden { display: none !important; }
+
+/* Mobile specific scaling for the clock */
+@media (max-width: 600px) {
+    .clock-window.scaled-down {
+        transform: scale(0.5);
+    }
+}
