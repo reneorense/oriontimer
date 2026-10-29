@@ -3,14 +3,10 @@
     --bg-color: #030308;
     --panel-bg: rgba(10, 15, 30, 0.8);
     --border-glow: rgba(0, 243, 255, 0.2);
-    
-    /* Neon Colors */
     --neon-cyan: #00f3ff;
     --neon-magenta: #ff00ea;
     --neon-amber: #ffb800;
     --neon-green: #00ff66;
-    
-    /* Clock Dimensions */
     --digit-h: 80px;
     --digit-w: 55px;
     --gap: 12px;
@@ -18,11 +14,7 @@
     --perspective: 1200px;
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     background-color: var(--bg-color);
@@ -37,18 +29,18 @@ body {
     position: relative;
 }
 
-/* --- 1. Particle Background Canvas --- */
-#particles-js {
-    position: absolute; /* absolute so it stays within the body */
+/* --- Native Particle Canvas --- */
+#particles-canvas {
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1; /* Above the background, below the UI */
-    pointer-events: none; /* Allows you to click through it */
+    width: 100vw;
+    height: 100vh;
+    z-index: 1; /* Behind UI */
+    pointer-events: none; /* Click through */
 }
 
-/* --- 2. All UI Elements sit above the particles --- */
+/* Push all UI elements above the canvas */
 #sfx-toggle, header, .controls, #clock-stage, .timer-actions {
     position: relative;
     z-index: 10; 
@@ -69,11 +61,7 @@ body {
     letter-spacing: 1px;
 }
 
-header {
-    margin-top: 4vh;
-    margin-bottom: 2vh;
-    text-align: center;
-}
+header { margin-top: 4vh; margin-bottom: 2vh; text-align: center; }
 
 h1 {
     font-size: 2.2rem;
@@ -83,7 +71,6 @@ h1 {
     text-transform: uppercase;
 }
 
-/* --- Input Controls --- */
 .controls {
     display: flex;
     flex-wrap: wrap;
@@ -98,19 +85,8 @@ h1 {
     max-width: 95vw;
 }
 
-.control-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.control-group label {
-    font-size: 0.65rem;
-    color: #6a8aae;
-    margin-bottom: 8px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
+.control-group { display: flex; flex-direction: column; align-items: center; }
+.control-group label { font-size: 0.65rem; color: #6a8aae; margin-bottom: 8px; letter-spacing: 2px; text-transform: uppercase; }
 
 .input-wrapper {
     display: flex;
@@ -136,20 +112,10 @@ h1 {
     border-bottom: 1px solid #223;
 }
 
-.step-btn {
-    background: #0a0f1a;
-    border: none;
-    color: #445;
-    width: 100%;
-    cursor: pointer;
-    padding: 6px 0;
-    user-select: none;
-}
-
+.step-btn { background: #0a0f1a; border: none; color: #445; width: 100%; cursor: pointer; padding: 6px 0; user-select: none; }
 .step-btn:hover { color: var(--neon-cyan); background: #111a2a; }
 .step-btn:active { background: #223; }
 
-/* --- The Clock Stage --- */
 #clock-stage {
     flex-grow: 1;
     display: flex;
@@ -178,34 +144,13 @@ h1 {
     backdrop-filter: blur(5px);
 }
 
-.clock-window.scaled-down {
-    transform: scale(0.75);
-}
-
-.reels-group {
-    display: flex;
-    gap: 2px; 
-    align-items: center;
-    position: relative;
-}
-
+.clock-window.scaled-down { transform: scale(0.75); }
+.reels-group { display: flex; gap: 2px; align-items: center; position: relative; }
 .base-reels { gap: var(--gap); }
 
-.plus-separator {
-    font-size: 3rem;
-    color: var(--neon-cyan);
-    margin: 0 15px;
-    text-shadow: 0 0 15px var(--neon-cyan);
-}
+.plus-separator { font-size: 3rem; color: var(--neon-cyan); margin: 0 15px; text-shadow: 0 0 15px var(--neon-cyan); }
 
-/* --- The 3D Reels --- */
-.reel-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    margin: 0 4px;
-}
+.reel-container { display: flex; flex-direction: column; align-items: center; position: relative; margin: 0 4px; }
 
 .reel {
     position: relative;
@@ -225,13 +170,7 @@ h1 {
     z-index: 10;
 }
 
-.drum {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    transition: transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
+.drum { position: absolute; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1); }
 
 .face {
     position: absolute;
@@ -247,15 +186,8 @@ h1 {
     backface-visibility: hidden;
 }
 
-.reel-label {
-    margin-top: 15px;
-    font-size: 0.7rem;
-    color: #5a7a9e;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
+.reel-label { margin-top: 15px; font-size: 0.7rem; color: #5a7a9e; letter-spacing: 2px; text-transform: uppercase; }
 
-/* --- Action Buttons --- */
 .timer-actions {
     display: flex;
     flex-wrap: wrap; 
@@ -283,39 +215,14 @@ h1 {
     max-width: 140px; 
 }
 
-.action-btn.primary {
-    border-color: var(--neon-green);
-    color: var(--neon-green);
-    box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
-}
-
-.action-btn:hover:not(:disabled) {
-    background: #111;
-    color: #fff;
-    border-color: #fff;
-}
-
+.action-btn.primary { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 102, 0.2); }
+.action-btn:hover:not(:disabled) { background: #111; color: #fff; border-color: #fff; }
 .action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
 .hidden { display: none !important; }
 
-/* --- Mobile Responsiveness --- */
-@media (max-width: 800px) {
-    .controls {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr); 
-        gap: 8px;
-    }
-}
-
+@media (max-width: 800px) { .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; } }
 @media (max-width: 500px) {
-    .controls {
-        grid-template-columns: repeat(3, 1fr); 
+    .controls { grid-template-columns: repeat(3, 1fr); }
+    h1 { font-size: 1.5rem; }
+    .clock-window.scaled-down { transform: scale(0.5); }
     }
-    h1 {
-        font-size: 1.5rem;
-    }
-    .clock-window.scaled-down {
-        transform: scale(0.5);
-    }
-}
