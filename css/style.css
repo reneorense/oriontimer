@@ -14,7 +14,6 @@
     --digit-h: 80px;
     --digit-w: 55px;
     --gap: 12px;
-    /* Mathematical radius for a 10-sided cylinder */
     --radius: calc(var(--digit-h) * 1.53884);
     --perspective: 1200px;
 }
@@ -160,7 +159,6 @@ h1 {
     transform-origin: center center;
 }
 
-/* Scales the clock down if weeks/months/years are added */
 .clock-window.scaled-down {
     transform: scale(0.75);
 }
@@ -194,13 +192,11 @@ h1 {
     position: relative;
     width: var(--digit-w);
     height: var(--digit-h);
-    /* Creates the physical window mask */
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
     transform-style: preserve-3d;
 }
 
-/* Glass reflection overlay */
 .reel::after {
     content: '';
     position: absolute;
@@ -265,7 +261,7 @@ h1 {
     transition: all 0.2s;
     letter-spacing: 2px;
     flex: 1; 
-    max-width: 140px; /* Prevents buttons from getting too wide on mobile */
+    max-width: 140px; 
 }
 
 .action-btn.primary {
@@ -284,9 +280,19 @@ h1 {
 
 .hidden { display: none !important; }
 
-/* Mobile specific scaling for the clock */
 @media (max-width: 600px) {
     .clock-window.scaled-down {
         transform: scale(0.5);
     }
+}
+
+/* --- Particle Background Styling --- */
+#particles-js {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Keeps it behind the timer UI */
+    pointer-events: none; /* Allows clicks to pass through to buttons */
 }
