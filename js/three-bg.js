@@ -1,4 +1,4 @@
-/* ORION Chrono Core 2.3 — Horizontal Holographic Edition
+/* ORION Chrono Core 2.4 — Interactive 3D Edition
  * The horizontal machine and its upright display are separate children of one
  * inspectable instrument. Neither the display nor its digits receive roll.
  * Three.js r128, plain JavaScript, GitHub Pages compatible, no build step.
@@ -43,10 +43,11 @@ window.addEventListener('load', () => {
   const casing = new THREE.Group(); machine.add(casing);
   const shell = cylinder(1.76,7.0,matte(0x07213b,.32),40,1,true);
   casing.add(shell);
-  casing.add(new THREE.LineSegments(
+  const wireCasing = new THREE.LineSegments(
     new THREE.WireframeGeometry(new THREE.CylinderGeometry(1.83,1.83,6.96,32,13,true)),
     lineMat(0x45ceff,.27)
-  ));
+  );
+  casing.add(wireCasing);
   const hologram = window.ORIONHologram && window.ORIONHologram.create({color:C.glow,opacity:.44,scanDensity:23});
   const shimmer = cylinder(1.88,6.75,hologram ? hologram.material : glowMat(C.glow,.09),48,1,true);
   casing.add(shimmer);
@@ -61,10 +62,11 @@ window.addEventListener('load', () => {
     beam.position.set(x,0,z);casing.add(beam);
   }
   // End caps and machined collars.
+  const endCaps = [];
   for(const side of [-1,1]) {
     const y=3.47*side;
     const endCylinder=cylinder(1.78,.29,matte(0x09263e,.98),48,1,false);
-    endCylinder.position.y=y; casing.add(endCylinder);
+    endCylinder.position.y=y; casing.add(endCylinder); endCaps.push(endCylinder);
     for(const [r,t,dy,color,op] of [
       [2.08,.105,3.38,0x55e7ff,.96],
       [2.03,.035,3.62,0x259aff,.92],
@@ -198,7 +200,7 @@ window.addEventListener('load', () => {
     ctx.strokeStyle='#2088a6';ctx.lineWidth=2;ctx.strokeRect(7,7,w-14,h-14);
     ctx.textBaseline='alphabetic';ctx.font='21px Share Tech Mono,monospace';
     ctx.textAlign='left';ctx.fillStyle='#7dd6ed';ctx.fillText('ORION / CHRONO UNIT',28,40);
-    ctx.textAlign='right';ctx.fillStyle='#63caeb';ctx.fillText('MODULE 2.3',w-28,40);
+    ctx.textAlign='right';ctx.fillStyle='#63caeb';ctx.fillText('MODULE 2.4',w-28,40);
     const urgent=status.state==='running'&&status.remainingMs>0&&status.remainingMs<=10000;
     const color=urgent?'#ffcf91':status.state==='complete'?'#a2ffbf':'#eaffff';
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor=urgent?'#ff912d':'#20d9ff';ctx.shadowBlur=27;
@@ -256,22 +258,13 @@ window.addEventListener('load', () => {
   // Resync after timer main.js was initialized earlier.
   window.dispatchEvent(new CustomEvent('orion3DReady'));
 
-  // Mouse/touch drag gently turns the ENTIRE gadget in 3D without rolling digits.
-  let dragging=false,lastX=0,lastY=0,targetYaw=0,targetPitch=0;
-  canvas.style.touchAction='pan-y';
-  canvas.addEventListener('pointerdown',e=>{
-    dragging=true;lastX=e.clientX;lastY=e.clientY;
-    if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);
+  // 2.4 inspection controls. Uses built-in Three.js raycasting for part
+  // selection; no new framework or 3D-control CDN is necessary.
+  const interaction = window.ORIONInteraction && window.ORIONInteraction.create({
+    canvas,stage,camera,instrument,screen:face,shell,wireCasing,
+    core,reactor,rotor,screenMount,bezel,leftClamp,rightClamp,endCaps,
+    reducedMotion
   });
-  canvas.addEventListener('pointermove',e=>{
-    if(!dragging||reducedMotion)return;
-    targetYaw=Math.max(-.42,Math.min(.42,targetYaw+(e.clientX-lastX)*.0045));
-    targetPitch=Math.max(-.16,Math.min(.16,targetPitch+(e.clientY-lastY)*.0018));
-    lastX=e.clientX;lastY=e.clientY;
-  });
-  canvas.addEventListener('pointerup',()=>dragging=false);
-  canvas.addEventListener('pointercancel',()=>dragging=false);
-  canvas.addEventListener('lostpointercapture',()=>dragging=false);
 
   function resize(){
     const w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);
@@ -282,6 +275,7 @@ window.addEventListener('load', () => {
     camera.lookAt(0,0,0);camera.updateProjectionMatrix();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,narrow?1.5:2));
     renderer.setSize(w,h,false);
+    if(interaction)interaction.configureCamera({x:narrow?2.1:2.4,y:narrow?1.15:1.2,z:narrow?17.8:14.2});
   }
   resize();window.addEventListener('resize',resize);
   if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(stage);
@@ -298,14 +292,13 @@ window.addEventListener('load', () => {
     helix.rotation.y-=dt*(.065+spin*.39)*animate;
     reactor.rotation.y+=dt*(.18+spin*.43)*animate;
     core.rotation.z+=dt*.075*animate;
-    instrument.rotation.y+=(targetYaw-instrument.rotation.y)*Math.min(1,dt*6);
-    instrument.rotation.x+=(targetPitch-instrument.rotation.x)*Math.min(1,dt*6);
+    if(interaction)interaction.update(dt);
     instrument.position.y=animate*Math.sin(t*.62)*.035;
     const urgent=running&&status.remainingMs>0&&status.remainingMs<=10000;
     const charge=.4+spin*.35+(urgent?.2:0);
     if(hologram){hologram.update(t,charge);hologram.setColor(urgent?C.warning:C.glow);}
     coreMat.color.setHex(urgent?C.warning:C.glow);
-    coreMat.opacity=(.46+spin*.23)*(1+Math.sin(t*(urgent?8:2.3))*.065*animate);
+    coreMat.opacity=(.46+spin*.23+(interaction&&interaction.isXray()?0.20:0))*(1+Math.sin(t*(urgent?8:2.3))*.065*animate);
     interior.material.opacity=.032+spin*.09;
     if(!reducedMotion){
       const attr=particleGeometry.attributes.position;
