@@ -32,7 +32,7 @@
     <main class="dashboard">
       <div class="page-heading">
         <div class="heading-left"><span class="heading-rule"></span><p>TACTICAL TIME MANAGEMENT <span class="heading-index">// UNIT 07</span></p></div>
-        <span class="heading-trace">HOLOGRAPHIC INSTRUMENT • V 2.2</span>
+        <span class="heading-trace">HOLOGRAPHIC INSTRUMENT • V 2.3</span>
       </div>
 
       <div class="workspace">
@@ -53,22 +53,22 @@
           <div class="core-topline"><span>CHRONO CORE <span class="dim">/ 001</span></span><span class="core-top-right"><span class="live-point"></span> LIVE TELEMETRY</span></div>
           <div class="stage" id="chrono-stage">
             <div class="stage-schematic stage-schematic-left" aria-hidden="true"><span>AXIS 01</span><span>Y 034.89</span><span>REACTOR</span></div>
-            <div class="stage-schematic stage-schematic-right" aria-hidden="true"><span>WIRE MESH</span><span>HOLO / 3D</span><span>V.02.2</span></div>
+            <div class="stage-schematic stage-schematic-right" aria-hidden="true"><span>WIRE MESH</span><span>HOLO / 3D</span><span>V.02.3</span></div>
             <div class="stage-corner corner-tl"></div><div class="stage-corner corner-tr"></div>
             <div class="stage-corner corner-bl"></div><div class="stage-corner corner-br"></div>
             <div class="stage-crosshair" aria-hidden="true"></div>
             <canvas id="three-canvas" aria-hidden="true"></canvas>
             <div id="webgl-fallback" class="webgl-fallback" aria-hidden="true">
-              <div class="fallback-cap fallback-cap-top"></div>
               <div class="fallback-shell">
+                <div class="fallback-cap fallback-cap-top"></div>
+                <div class="fallback-cap fallback-cap-bottom"></div>
                 <div class="fallback-glow"></div>
                 <div class="fallback-screen"><strong id="fallback-time">00:00</strong><small>CHRONO CORE</small></div>
                 <div class="fallback-beams"></div>
               </div>
-              <div class="fallback-cap fallback-cap-bottom"></div>
             </div>
             <div class="stage-coordinate top-coordinate">Y <span>07</span> / Z <span>21</span></div>
-            <div class="stage-coordinate bottom-coordinate">HORIZONTAL CHRONO REACTOR <span>—</span> ACTIVE SCHEMATIC</div>
+            <div class="stage-coordinate bottom-coordinate">HORIZONTAL CHRONO REACTOR <span>—</span> HOLOGRAPHIC ARRAY</div>
           </div>
           <div class="stage-footer"><span class="diamond-symbol">◇</span> REAL-TIME 3D HOLOGRAPHIC INSTRUMENT <span class="drag-hint">DRAG TO INSPECT <span aria-hidden="true">↔</span></span></div>
         </section>
@@ -112,8 +112,11 @@
     </main>
   </div>
   <input type="hidden" id="hidden-ms-tracker" value="0">
-  <!-- Existing Three.js version retained, no React or build step needed. -->
+  <!-- Pinned vanilla Three.js and GSAP. Graphics gracefully degrade when either CDN is unavailable. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="js/hologram-material.js" defer></script>
+  <script src="js/chrono-animations.js" defer></script>
   <script src="js/three-bg.js" defer></script>
   <script type="module" src="js/main.js"></script>
 </body>
