@@ -1,3 +1,4 @@
+console.log("reels.js loaded");
 export function createReelContainer(id, label) {
     const container = document.createElement('div');
     container.className = 'reel-container';
@@ -11,14 +12,12 @@ export function createReelContainer(id, label) {
     drum.dataset.rotation = 0;
     drum.style.transform = `rotateX(0deg)`;
 
-    // Mathematical radius for an 80px height cylinder
     const radius = 80 * 1.53884; 
 
     for (let i = 0; i < 10; i++) {
         const face = document.createElement('div');
         face.className = 'face';
         face.textContent = i;
-        // Calculate exact pixels instead of CSS variables
         face.style.transform = `rotateX(${i * 36}deg) translateZ(${radius}px)`;
         drum.appendChild(face);
     }
@@ -40,7 +39,9 @@ export function setReelDigit(id, newDigit, colorHex) {
     if (!drum) return;
 
     if (colorHex) {
-        faces.forEach(face => face.style.color = colorHex);
+        faces.forEach(face => {
+            if(face.style.color !== colorHex) face.style.color = colorHex;
+        });
     }
 
     let currentRotation = parseFloat(drum.dataset.rotation);
@@ -48,7 +49,8 @@ export function setReelDigit(id, newDigit, colorHex) {
     if (currentDigit < 0) currentDigit += 10;
 
     let diff = newDigit - currentDigit;
-    if (diff < 0) diff += 10; // Forward spin only
+    if (diff === 0) return; 
+    if (diff < 0) diff += 10; 
 
     currentRotation += (diff * 36);
     drum.dataset.rotation = currentRotation;
