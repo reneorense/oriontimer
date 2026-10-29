@@ -12,6 +12,7 @@ const btnPause = document.getElementById('btn-pause');
 const btnReset = document.getElementById('btn-reset');
 const sfxToggleBtn = document.getElementById('sfx-toggle');
 const clockWindow = document.querySelector('.clock-window');
+const hudWrapper = document.getElementById('hud-wrapper'); // NEW: The rings container
 
 // 1. Initialize Engine
 const engine = new TimerEngine(
@@ -20,6 +21,7 @@ const engine = new TimerEngine(
         btnStart.disabled = false;
         btnPause.disabled = true;
         sfx.playAlarm();
+        hudWrapper.classList.remove('active'); // Rings slow down when finished
     }
 );
 
@@ -91,12 +93,14 @@ btnStart.addEventListener('click', () => {
     engine.start();
     btnStart.disabled = true;
     btnPause.disabled = false;
+    hudWrapper.classList.add('active'); // Rings spin fast
 });
 
 btnPause.addEventListener('click', () => {
     engine.pause();
     btnStart.disabled = false;
     btnPause.disabled = true;
+    hudWrapper.classList.remove('active'); // Rings slow down
 });
 
 btnReset.addEventListener('click', () => {
@@ -104,6 +108,7 @@ btnReset.addEventListener('click', () => {
     engine.reset();
     btnStart.disabled = false;
     btnPause.disabled = true;
+    hudWrapper.classList.remove('active'); // Rings slow down
 });
 
 sfxToggleBtn.addEventListener('click', () => {
