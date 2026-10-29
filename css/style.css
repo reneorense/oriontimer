@@ -16,7 +16,6 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Background moved to html to prevent it from covering the canvas */
 html {
     background-color: var(--bg-color);
     background-image: radial-gradient(circle at center, #0a1020 0%, #030308 100%);
@@ -35,18 +34,16 @@ body {
     position: relative;
 }
 
-/* --- Native Particle Canvas --- */
 #particles-canvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 0; /* Behind everything except html background */
+    z-index: 0; 
     pointer-events: none;
 }
 
-/* Push all UI elements above the canvas */
 #sfx-toggle, header, .controls, #clock-stage, .timer-actions {
     position: relative;
     z-index: 10; 
@@ -131,6 +128,7 @@ h1 {
     padding: 10px;
     perspective: var(--perspective);
     overflow-x: auto;
+    position: relative;
 }
 
 .clock-window {
@@ -148,6 +146,7 @@ h1 {
     transition: transform 0.3s ease;
     transform-origin: center center;
     backdrop-filter: blur(5px);
+    z-index: 5; /* Above the HUD rings */
 }
 
 .clock-window.scaled-down { transform: scale(0.75); }
@@ -231,4 +230,85 @@ h1 {
     .controls { grid-template-columns: repeat(3, 1fr); }
     h1 { font-size: 1.5rem; }
     .clock-window.scaled-down { transform: scale(0.5); }
+}
+
+/* --- HOLOGRAPHIC HUD RINGS --- */
+.hud-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    perspective: 1000px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.6; /* Faded when idle */
+    transition: opacity 0.5s ease;
+}
+
+/* Glow brighter when active */
+.hud-wrapper.active {
+    opacity: 1;
+}
+
+.ring {
+    position: absolute;
+    border-radius: 50%;
+    /* This tilt creates the 3D floor effect */
+    transform: rotateX(75deg); 
+    border: 2px solid transparent;
+}
+
+.ring-outer {
+    width: 450px;
+    height: 450px;
+    border-top: 2px solid var(--neon-magenta);
+    border-bottom: 2px dashed var(--neon-magenta);
+    box-shadow: 0 0 20px rgba(255, 0, 234, 0.2), inset 0 0 20px rgba(255, 0, 234, 0.2);
+    animation: spin 15s linear infinite;
+}
+
+.ring-middle {
+    width: 350px;
+    height: 350px;
+    border-left: 3px dotted var(--neon-cyan);
+    border-right: 3px solid var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.2);
+    animation: spin-reverse 10s linear infinite;
+}
+
+.ring-inner {
+    width: 250px;
+    height: 250px;
+    border: 1px solid var(--neon-amber);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid var(--neon-amber);
+    box-shadow: 0 0 20px rgba(255, 184, 0, 0.2);
+    animation: spin 5s linear infinite;
+}
+
+/* When the timer is running, spin faster */
+.hud-wrapper.active .ring-outer { animation-duration: 4s; }
+.hud-wrapper.active .ring-middle { animation-duration: 2s; }
+.hud-wrapper.active .ring-inner { animation-duration: 1s; }
+
+@keyframes spin {
+    0% { transform: rotateX(75deg) rotateZ(0deg); }
+    100% { transform: rotateX(75deg) rotateZ(360deg); }
+}
+
+@keyframes spin-reverse {
+    0% { transform: rotateX(75deg) rotateZ(360deg); }
+    100% { transform: rotateX(75deg) rotateZ(0deg); }
+}
+
+/* Scale rings down on mobile */
+@media (max-width: 600px) {
+    .ring-outer { width: 300px; height: 300px; }
+    .ring-middle { width: 220px; height: 220px; }
+    .ring-inner { width: 140px; height: 140px; }
 }
