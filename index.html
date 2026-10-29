@@ -25,8 +25,6 @@
 
     <!-- Input Controls (Top Section) -->
     <section class="controls" id="input-controls">
-        <!-- Note: These will be wired up to the totalMs engine in JS -->
-        
         <!-- Large Units -->
         <div class="control-group">
             <label>Years</label>
@@ -98,19 +96,13 @@
         <div class="clock-window">
             
             <!-- Extended Units (Appears on the left) -->
-            <div class="reels-group plus-reels" id="plus-reels">
-                <!-- JS will inject drum elements here -->
-                <div class="labels-group" id="plus-labels"></div>
-            </div>
+            <div class="reels-group plus-reels" id="plus-reels"></div>
 
             <!-- The Plus Sign Separator -->
             <div class="plus-separator hidden" id="plus-separator">+</div>
 
             <!-- Core Units (Days to Milliseconds) -->
-            <div class="reels-group base-reels" id="base-reels">
-                <!-- JS will inject drum elements here -->
-                <div class="labels-group" id="base-labels"></div>
-            </div>
+            <div class="reels-group base-reels" id="base-reels"></div>
 
         </div>
     </main>
@@ -122,6 +114,7 @@
         <button id="btn-reset" class="action-btn">RESET</button>
     </section>
 
-    <!-- Scripts will be loaded later -->
+    <!-- THIS IS THE MISSING PIECE -->
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
