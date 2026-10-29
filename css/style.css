@@ -106,3 +106,6 @@ footer{display:flex;justify-content:space-between;gap:12px;padding:19px 0 32px;c
 @media(max-width:390px){.view-btn span{font-size:7px}.view-btn{padding:5px 6px;letter-spacing:0}}
 
 @media(max-width:760px){.view-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.view-btn,.view-btn:first-child,.view-btn:nth-child(2){width:100%;min-height:42px;padding:8px 4px}.view-btn span{font-size:9px}.component-pick{min-height:40px}}
+
+/* ORION 2.6: retain readable interactive HUD on small screens */
+@media(max-width:760px){.view-controls button,.view-btn,.component-pick{font-size:clamp(10px,2.5vw,13px)!important;letter-spacing:.4px!important}.inspection-panel{max-width:100%}}
