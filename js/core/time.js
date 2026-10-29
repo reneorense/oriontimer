@@ -1,4 +1,3 @@
-console.log("time.js loaded");
 export const MS_IN_SEC = 1000;
 export const SEC_IN_MIN = 60;
 export const MIN_IN_HR = 60;
@@ -16,7 +15,6 @@ export const MS_IN_YEAR = MS_IN_MONTH * MONTH_IN_YEAR;
 
 export function decomposeTime(totalMs) {
     let remainder = Math.max(0, totalMs);
-
     const years = Math.floor(remainder / MS_IN_YEAR);
     remainder %= MS_IN_YEAR;
     const months = Math.floor(remainder / MS_IN_MONTH);
