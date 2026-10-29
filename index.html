@@ -32,7 +32,7 @@
     <main class="dashboard">
       <div class="page-heading">
         <div class="heading-left"><span class="heading-rule"></span><p>TACTICAL TIME MANAGEMENT <span class="heading-index">// UNIT 07</span></p></div>
-        <span class="heading-trace">HOLOGRAPHIC INSTRUMENT • V 2.3</span>
+        <span class="heading-trace">HOLOGRAPHIC INSTRUMENT • V 2.4</span>
       </div>
 
       <div class="workspace">
@@ -53,11 +53,11 @@
           <div class="core-topline"><span>CHRONO CORE <span class="dim">/ 001</span></span><span class="core-top-right"><span class="live-point"></span> LIVE TELEMETRY</span></div>
           <div class="stage" id="chrono-stage">
             <div class="stage-schematic stage-schematic-left" aria-hidden="true"><span>AXIS 01</span><span>Y 034.89</span><span>REACTOR</span></div>
-            <div class="stage-schematic stage-schematic-right" aria-hidden="true"><span>WIRE MESH</span><span>HOLO / 3D</span><span>V.02.3</span></div>
+            <div class="stage-schematic stage-schematic-right" aria-hidden="true"><span>WIRE MESH</span><span>HOLO / 3D</span><span>V.02.4</span></div>
             <div class="stage-corner corner-tl"></div><div class="stage-corner corner-tr"></div>
             <div class="stage-corner corner-bl"></div><div class="stage-corner corner-br"></div>
             <div class="stage-crosshair" aria-hidden="true"></div>
-            <canvas id="three-canvas" aria-hidden="true"></canvas>
+            <canvas id="three-canvas" tabindex="0" aria-label="Interactive holographic chrono core. Drag to rotate, tap parts to inspect, or use the view controls below."></canvas>
             <div id="webgl-fallback" class="webgl-fallback" aria-hidden="true">
               <div class="fallback-shell">
                 <div class="fallback-cap fallback-cap-top"></div>
@@ -70,7 +70,28 @@
             <div class="stage-coordinate top-coordinate">Y <span>07</span> / Z <span>21</span></div>
             <div class="stage-coordinate bottom-coordinate">HORIZONTAL CHRONO REACTOR <span>—</span> HOLOGRAPHIC ARRAY</div>
           </div>
-          <div class="stage-footer"><span class="diamond-symbol">◇</span> REAL-TIME 3D HOLOGRAPHIC INSTRUMENT <span class="drag-hint">DRAG TO INSPECT <span aria-hidden="true">↔</span></span></div>
+          <div class="stage-footer"><span class="diamond-symbol">◇</span> INTERACTIVE 3D CHRONO CORE <span class="drag-hint">DRAG • TAP • EXPLORE <span aria-hidden="true">↔</span></span></div>
+          <div class="view-toolbar" role="group" aria-label="3D viewer controls">
+            <div class="view-toolbar-label">3D VIEW CONTROLS</div>
+            <div class="view-tools">
+              <button class="view-btn" id="view-zoom-in" title="Zoom in" aria-label="Zoom in" type="button" disabled>＋</button>
+              <button class="view-btn" id="view-zoom-out" title="Zoom out" aria-label="Zoom out" type="button" disabled>－</button>
+              <button class="view-btn" id="view-home" title="Reset camera" type="button" disabled>↺ <span>RESET VIEW</span></button>
+              <button class="view-btn" id="view-xray" type="button" aria-pressed="false" disabled>◈ <span>X-RAY</span></button>
+              <button class="view-btn" id="view-explode" type="button" aria-pressed="false" disabled>◇ <span>EXPLODE</span></button>
+              <button class="view-btn" id="view-fullscreen" type="button" disabled>⛶ <span>FULLSCREEN</span></button>
+            </div>
+          </div>
+          <div class="part-inspector" id="part-inspector" aria-live="polite">
+            <div class="part-inspector-top">COMPONENT ANALYSIS <span id="inspector-code">// READY</span></div>
+            <div class="part-inspector-body"><strong id="inspector-title">Explore ORION</strong><p id="inspector-description">Drag the cylinder or select a component below to examine its holographic systems.</p></div>
+            <div class="component-picks" role="group" aria-label="Inspect parts of the chrono core">
+              <button class="component-pick" type="button" data-part="display" disabled>DISPLAY</button>
+              <button class="component-pick" type="button" data-part="reactor" disabled>REACTOR</button>
+              <button class="component-pick" type="button" data-part="collars" disabled>COLLARS</button>
+              <button class="component-pick" type="button" data-part="casing" disabled>CHASSIS</button>
+            </div>
+          </div>
         </section>
 
         <aside class="side-console right-console" aria-label="Live system status">
@@ -117,6 +138,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="js/hologram-material.js" defer></script>
   <script src="js/chrono-animations.js" defer></script>
+  <script src="js/chrono-interaction.js" defer></script>
   <script src="js/three-bg.js" defer></script>
   <script type="module" src="js/main.js"></script>
 </body>

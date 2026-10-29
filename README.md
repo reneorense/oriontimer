@@ -1,61 +1,58 @@
-# ORION TIMER 2.3 — Holographic Horizontal Chrono Core
+# ORION TIMER 2.4 — Interactive 3D Chrono Core
 
-A sci-fi countdown instrument designed for ages 10+. Built with plain HTML, CSS, JavaScript and Three.js, hosted as a static website on GitHub Pages. **No build tools, React, or installation required.**
+The same horizontal sci-fi chronometer approved in 2.3, now with **interactive 3D inspection**. Designed for ages 10+. Plain HTML, CSS, JavaScript, Three.js r128, GSAP optional; no React, npm, or build step. Compatible with GitHub Pages.
 
-## What changed in 2.3
+## What's new in 2.4
 
-- Corrected the orientation error in 2.2. The cylinder is physically horizontal while the **countdown screen remains upright**, attached to the same overall 3D instrument. The display is no longer a child of the rotated machinery group.
-- Reworked the wireframe cylinder: mechanical rings, strengthened end caps, axial braces, helical conductors, inner reactor, animated internal particles, and segmented charge lamps.
-- Added `js/hologram-material.js` — an **original** lightweight GLSL shader implementing Fresnel edge illumination and moving scanlines. It follows techniques demonstrated by the MIT-licensed [Vanilla Three.js Holographic Material project](https://github.com/ektogamat/threejs-vanilla-holographic-material); it is not a verbatim copy of their material.
-- Added `js/chrono-animations.js` — motion controller using [GSAP](https://github.com/greensock/GSAP) when available, for initialization flash, clamping mechanisms, screen pulses, and state changes.
-- Added a lightweight soft halo using a radial gradient texture (avoids heavy post-processing on phones).
-- Made the last **10 seconds** use amber warning lighting, rather than the last 10% of the mission.
-- Reduced the frequency of expensive countdown display texture updates.
-- Improved the CSS-only horizontal fallback for browsers where Three.js or WebGL is unavailable.
+- Drag the model left, right, up, or down to inspect it (horizontal swipe supported on mobile; regular vertical page scrolling remains available).
+- Zoom in and out with the viewer buttons or desktop mouse wheel.
+- Tap/click the front timer, end caps, or chassis to see component information (using Three.js `Raycaster`).
+- Use **Display / Reactor / Collars / Chassis** buttons to inspect the same components from a phone or keyboard, even if a component is hard to tap in 3D.
+- **X-RAY** makes the outer shell more transparent, revealing its internal machine structure.
+- **EXPLODE** separates the display and movable mechanical assemblies; **ASSEMBLE** returns them.
+- **RESET VIEW** re-centers rotation and zoom. Double-clicking the 3D viewer also resets its view.
+- **FULLSCREEN** expands the instrument view on browsers that support the Fullscreen API.
+- When focused on the 3D canvas, arrow keys rotate the view, + / - zoom, Escape resets the camera.
+- The display remains upright and horizontally oriented: the 3D geometry rotates in inspection mode, but the display is never rolled 90 degrees by the cylinder transformation.
+- All interactions remain separate from the timer engine: time presets, Start, Pause, Resume, Reset, and countdown-linked effects remain functional.
 
-## Getting started
+## Files changed from 2.3
 
-1. Unzip the archive. Open the folder containing `index.html`.
-2. To preview locally, use VS Code + Live Server, or run `python -m http.server 8000` from that folder.
-3. Open `http://localhost:8000` in Chrome. The default mission is 05:00.
-4. Select a preset, then test **INITIALIZE / PAUSE / RESUME / RESET**.
-5. Drag the main 3D device left/right to inspect its side, without rolling the digits.
-6. At the final 10 seconds, the lighting shifts to amber.
-
-## Upload to GitHub Pages
-
-1. Keep your current 2.2 version in GitHub history (or use a new branch).
-2. Extract the ZIP and upload **its contents**, not the ZIP itself, into your repository root.
-3. Make sure `index.html` is at the root and `css/` and `js/` are beside it.
-4. Commit the changes; when the GitHub Pages deployment finishes, refresh your browser (a private tab avoids cached files).
-
-## Important files
-
-| File | Purpose |
+| File | Change |
 |---|---|
-| `index.html` | Loads scripts in dependency order; mission and telemetry interface |
-| `js/three-bg.js` | **New horizontal 3D machine and upright screen** |
-| `js/hologram-material.js` | Custom holographic shader using the existing global THREE |
-| `js/chrono-animations.js` | GSAP-powered state transitions with no-GSAP fallback |
-| `js/main.js` | Existing countdown integration and timer controls |
-| `js/core/engine.js` | Existing timer engine, unchanged |
-| `css/style.css` | Mobile layout and fallback styling |
+| `index.html` | Viewer toolbar, accessible component selectors, inspection text, and version labels |
+| `css/style.css` | Interactive control styling, mobile layout, fullscreen presentation |
+| `js/three-bg.js` | Hooks the existing 3D model into the new interaction controller |
+| `js/chrono-interaction.js` | **New:** 3D raycasting, view movement, zoom, X-ray, exploded view, fullscreen |
+| `README.md` | Updated instructions |
 
-## External dependencies
+The 2.3 3D renderer, shader, countdown engine, and GSAP animations are otherwise preserved.
 
-- `three.js` r128 from cdnjs (previously used in 2.2).
-- `GSAP` 3.12.5 from cdnjs (new in 2.3; **optional**: the timer and 3D animation still function without GSAP, but cinematic transitions are simpler).
-- Google Fonts (optional; local monospace fallbacks work).
+## How to publish on GitHub Pages
 
-**Internet access is needed for the WebGL 3D library CDN.** If loading Three.js fails, the CSS-only horizontal timer is shown and the actual countdown controls still work. The custom shader and motion controller files are included with the project.
+1. Extract this archive.
+2. Open your repository on GitHub: `https://github.com/reneorense/oriontimer`.
+3. Choose **Add file → Upload files** and upload the **contents** of `ORION-Timer-2.4-Interactive` (not its enclosing folder or ZIP).
+4. Check that `index.html` is at the top level, and `css/` and `js/` folders sit alongside it.
+5. Commit to a test branch for safety; GitHub Pages usually serves `main`, so merge once ready to publish.
+6. After Pages deploys, refresh `https://reneorense.github.io/oriontimer/` or use a private tab to avoid cached JavaScript.
 
-## Validation status
+## How to use
 
-Basic JavaScript syntax and 2D-mode browser interaction tests can be run locally. The environment used to generate this package cannot fetch the external Three.js CDN, so WebGL geometry, shader compilation, and GPU performance require real-browser testing after publishing on GitHub Pages. Do not treat the 3D appearance as visually signed off until you have tested it on your phone.
+- Select a mission preset and press **INITIALIZE** to start the countdown.
+- Drag the chrono core to examine its sides; tap parts or press the component buttons for more information.
+- Press **X-RAY** to make the chassis transparent; press **EXPLODE** to separate the mechanical components, then **ASSEMBLE** to reconnect them.
+- Press **RESET VIEW** to re-center the model.
+- Press **FULLSCREEN** to focus on the 3D instrument if your browser supports it.
 
-## External repositories used as references
+## Dependencies
 
-- [Vanilla Three.js Holographic Material](https://github.com/ektogamat/threejs-vanilla-holographic-material) (MIT) — conceptual reference for hologram Fresnel, scanline and animated signal effects.
-- [GSAP](https://github.com/greensock/GSAP) — actual client-side animation engine loaded through cdnjs.
+- Three.js r128, served from cdnjs (already used by 2.3).
+- GSAP 3.12.5, served from cdnjs for smoother animations; interactions fall back to instantaneous state changes if GSAP is not available.
+- Original lightweight holographic material shader in `js/hologram-material.js` inspired by general scanline and Fresnel approaches in [Vanilla Three.js Holographic Material](https://github.com/ektogamat/threejs-vanilla-holographic-material). No source code copied from that project.
 
-This is not a production-ready replacement for 2.2 until you confirm the 3D render on your device. Deploy to a test branch or keep your previous commit available for rollback.
+## Testing / limitations
+
+The files pass JavaScript syntax checks. Headless tests with the WebGL fallback show no horizontal overflow at 390, 768, and 1366px and demonstrate preset selection, countdown start, pause, and reset. Mocked 3D-control tests verify viewer zoom/reset, X-ray, exploded view, and component selection. Actual Three.js rendering and phone GPU performance could not be visually verified in the authoring environment due to blocked external CDN access. Please check the live GitHub Pages build before replacing an approved production version.
+
+The interactive controls are disabled automatically if Three.js or WebGL fails to initialize; a functional 2D timer remains available.
