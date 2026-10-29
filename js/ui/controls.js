@@ -16,9 +16,11 @@ export function setupControls(onTimeChanged, isRunning, sfx) {
             const dir = parseInt(e.target.dataset.dir);
             
             sfx.playTick();
-            const currentMs = parseInt(document.getElementById('hidden-ms-tracker').value) || 0;
-            const newMs = Math.max(0, currentMs + (dir * UNIT_MULTIPLIERS[unit]));
+            // Read from the hidden tracker in HTML
+            const tracker = document.getElementById('hidden-ms-tracker');
+            const currentMs = parseInt(tracker.value) || 0;
             
+            const newMs = Math.max(0, currentMs + (dir * UNIT_MULTIPLIERS[unit]));
             onTimeChanged(newMs);
         });
     });
@@ -43,18 +45,11 @@ export function setupControls(onTimeChanged, isRunning, sfx) {
     });
 }
 
-// Updates the text boxes at the top of the screen
 export function syncInputBoxes(ms) {
-    // We use a hidden input to store the exact ms for the steppers to reference
-    let tracker = document.getElementById('hidden-ms-tracker');
-    if (!tracker) {
-        tracker = document.createElement('input');
-        tracker.type = 'hidden';
-        tracker.id = 'hidden-ms-tracker';
-        document.body.appendChild(tracker);
-    }
-    tracker.value = ms;
+    // Update the hidden tracker
+    document.getElementById('hidden-ms-tracker').value = ms;
 
+    // Update the visible inputs
     const time = decomposeTime(ms);
     document.getElementById('input-years').value = time.years;
     document.getElementById('input-months').value = time.months;
