@@ -11,6 +11,9 @@
 </head>
 <body>
 
+    <!-- Particle Background Container -->
+    <div id="particles-js"></div>
+
     <button id="sfx-toggle" aria-label="Toggle Sound">🔊 SFX ON</button>
 
     <header>
@@ -90,10 +93,13 @@
         <button id="btn-reset" class="action-btn">RESET</button>
     </section>
 
-    <!-- Hidden tracker for the steppers -->
     <input type="hidden" id="hidden-ms-tracker" value="0">
 
-    <!-- THIS IS THE SCRIPT TAG -->
+    <!-- Particles.js CDN Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particlesjs/2.2.3/particles.min.js"></script>
+    <!-- Particles Configuration -->
+    <script src="js/particles-init.js"></script>
+    <!-- Main Timer Logic -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
