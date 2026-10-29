@@ -1,4 +1,4 @@
-# ORION 2.1 — Cylindrical Holographic Timer
+# ORION 2.2 — Cylindrical Holographic Timer
 
 This release intentionally **replaces the previous background-only 3D art** with
 an actual 3D wireframe cylindrical timer. The clock digits are rendered to a
@@ -56,3 +56,7 @@ that branch is merged into main.
 - Real devices and browsers should be tested for 3D performance and legibility.
 - Improving WebGL rendering, progress visibility, model detail and audio are
   sensible next milestones after visual sign-off.
+
+
+## 2.2 Horizontal Chrono Core
+This version reorients the cylindrical 3D frame into a horizontal device while keeping the same mission-control visual style.
