@@ -1,38 +1,58 @@
-# ORION TIMER 2.0 — Starter Build
+# ORION 2.1 — Cylindrical Holographic Timer
 
-This is a **starter revision** based on the uploaded ORION TIMER repository. It preserves the original HTML/CSS/JavaScript architecture and Three.js r128 background. No React installation or npm setup is required.
+This release intentionally **replaces the previous background-only 3D art** with
+an actual 3D wireframe cylindrical timer. The clock digits are rendered to a
+CanvasTexture physically attached to a Three.js panel on the cylindrical
+chassis. The rotating collars, radial progress bars, internal power core,
+wireframe shell, and brackets are modeled in Three.js, not merely drawn as
+an unrelated page background.
 
-## What's new
+## How to preview
 
-- 5, 10, 15 and 25-minute mission presets.
-- Mission status and a progress bar above the existing timer.
-- A countdown-linked progress arc in the existing Three.js scene.
-- A translucent core for additional holographic depth.
-- Reduced-motion styling and improved mobile pixel-ratio handling.
-- Fixed a bug where START could appear active with a zero-duration timer.
+Open the extracted folder using a local HTTP server, e.g. VS Code Live Server,
+or `python -m http.server 8000` and visit `http://localhost:8000/`.
 
-## How to try it
+1. The default mission is 05:00. Press **INITIALIZE** to start.
+2. Press **PAUSE** and **RESUME** to suspend and continue.
+3. Choose 10, 15, or 25 minutes on the mission panel.
+4. Drag across the 3D cylinder horizontally to inspect its wireframe depth.
+5. Expand **CUSTOM TIME CONFIGURATION** for years/months/weeks/days/hours/minutes/seconds.
+6. Reloading the webpage resets to the default 05:00 mission.
 
-1. Extract the ZIP.
-2. Open a terminal in the extracted `oriontimer-main` folder.
-3. Run `python -m http.server 8000` (on Windows, `py -m http.server 8000` may work instead).
-4. Open `http://localhost:8000` in Chrome.
-5. Choose `05 MIN`, click START, and observe the status bar and 3D arc. Try PAUSE and RESET.
+## File-by-file changes
 
-The website loads Three.js from the internet via the existing CDN script. For a fully offline or production-ready version, the next phase should pin and bundle dependencies.
+| File | Change |
+| --- | --- |
+| `js/three-bg.js` | **Rewritten:** cylindrical 3D apparatus, mounted texture screen, mechanical bands, glowing wireframe and reactive progress lights. |
+| `index.html` | **Redesigned:** core stage is now the dominant middle column; new HUD mission and telemetry panels. The old large 2D reel display was removed from the layout. |
+| `css/style.css` | **Rewritten:** mission-control interface with mobile-first breakpoints, responsive canvas size and 2D fallback. |
+| `js/main.js` | **Rewritten:** timer engine sends remaining time, progress and status directly to the 3D instrument. Includes readable fallback display. |
+| `js/core/engine.js` | Unmodified accurate monotonic timer engine. |
+| `js/core/time.js` | Unmodified existing unit calculations. |
+| `js/ui/controls.js` | Unmodified original arrow and input controls. |
+| `js/audio/sfx.js` | Unmodified original sound effects. |
+| `js/ui/reels.js` | Retained for reference, but **not loaded**; the reel-based UI has been superseded by the 3D screen. |
 
-## Files modified
+## Dependencies
 
-- `index.html`: mission panel, presets, and initial disabled Start state.
-- `css/style.css`: new HUD panel styling.
-- `js/main.js`: status/progress tracking and presets.
-- `js/core/engine.js`: `start()` returns whether it actually started.
-- `js/three-bg.js`: progress arc, holographic core layer, responsive quality.
+- Uses the **existing** Three.js r128 CDN tag, with no build tools, no React, no extra libraries.
+- Uses Google Fonts (Orbitron and Share Tech Mono) for typography when available.
+- The visual 2D CSS cylinder appears if Three.js cannot load or WebGL is unavailable.
 
-## Notes and next-phase issues
+## Deploy on GitHub Pages
 
-- This is a **prototype**, not a full performance/accessibility regression test.
-- The existing timer uses approximate months of 30 days and years of 360 days. For ordinary study timers, use minutes/hours.
-- The existing reel layout is wide on small screens; redesigning the readout is planned for the next phase.
-- Advanced bloom and shader effects are *not* installed yet; they need a modern Three.js import/build setup first.
-- Protect your original repository by testing this build in a separate branch.
+Keep a backup of your existing `main` branch. Upload the **contents** of this
+folder into the repository root (keep `index.html` at root, with `css/` and
+`js/` beside it). Ideally test on a separate branch first. GitHub Pages with
+**Deploy from branch → main → / (root)** will then serve the new design after
+that branch is merged into main.
+
+## Limitations / next steps
+
+- This version has real 3D geometry and physical-screen text; it does not yet use
+  external shader libraries, bloom passes, or high-poly models.
+- The current Three.js version is loaded from a public CDN, so browser internet
+  access is needed for its 3D component. A CSS fallback remains usable offline.
+- Real devices and browsers should be tested for 3D performance and legibility.
+- Improving WebGL rendering, progress visibility, model detail and audio are
+  sensible next milestones after visual sign-off.

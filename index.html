@@ -1,80 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORION | Mission Timer</title>
-    <meta name="theme-color" content="#030308">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#030a13">
+  <meta name="description" content="ORION — an interactive three-dimensional holographic mission timer.">
+  <title>ORION // Holographic Chrono Core</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-    <!-- 3D Schematic Background -->
-    <canvas id="three-canvas"></canvas>
-    
-    <!-- Particle Background -->
-    <canvas id="particles-canvas"></canvas>
-
-    <button id="sfx-toggle" aria-label="Toggle Sound" aria-pressed="true">🔊 SFX ON</button>
-
-    <header>
-        <p class="eyebrow">ORION / MISSION CONTROL</p>
-        <h1>ORION's Timer</h1>
-        <p class="subtitle">HOLOGRAPHIC COUNTDOWN SYSTEM</p>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-symbol" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div>
+          <p class="overline">ORION SYSTEMS <span class="micro-line">/</span> CHRONO MODULE</p>
+          <h1>ORION<span class="brand-dot">.</span><span class="brand-subtitle"> TIMER</span></h1>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="network-dot" aria-hidden="true"></span>
+        <span class="network-text">SYSTEM ONLINE</span>
+        <button id="sfx-toggle" class="sound-toggle" aria-label="Toggle sound effects" aria-pressed="true" type="button">SFX ON</button>
+      </div>
     </header>
 
-    <section class="mission-panel" aria-label="Mission presets and status">
-        <div class="mission-overview">
-            <span class="mission-label">MISSION STATUS</span>
-            <span id="mission-status" class="mission-status" role="status" aria-live="polite">AWAITING INPUT</span>
-        </div>
-        <div class="mission-progress" id="mission-progress" role="progressbar" aria-label="Time remaining" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <div id="mission-progress-fill" class="mission-progress-fill"></div>
-        </div>
-        <div class="preset-row" aria-label="Quick timer presets">
-            <span class="preset-label">QUICK LAUNCH</span>
-            <button class="preset-btn" data-minutes="5" type="button">05 MIN</button>
-            <button class="preset-btn" data-minutes="10" type="button">10 MIN</button>
-            <button class="preset-btn" data-minutes="15" type="button">15 MIN</button>
-            <button class="preset-btn" data-minutes="25" type="button">25 MIN</button>
-        </div>
-    </section>
+    <main class="dashboard">
+      <div class="page-heading">
+        <div class="heading-left"><span class="heading-rule"></span><p>TACTICAL TIME MANAGEMENT <span class="heading-index">// UNIT 07</span></p></div>
+        <span class="heading-trace">HOLOGRAPHIC INSTRUMENT • V 2.1</span>
+      </div>
 
-    <section class="controls" id="input-controls">
-        <div class="control-group"><label>Years</label><div class="input-wrapper"><button class="step-btn up" data-unit="years" data-dir="1">▲</button><input type="text" id="input-years" value="0" inputmode="numeric"><button class="step-btn down" data-unit="years" data-dir="-1">▼</button></div></div>
-        <div class="control-group"><label>Months</label><div class="input-wrapper"><button class="step-btn up" data-unit="months" data-dir="1">▲</button><input type="text" id="input-months" value="0" inputmode="numeric"><button class="step-btn down" data-unit="months" data-dir="-1">▼</button></div></div>
-        <div class="control-group"><label>Weeks</label><div class="input-wrapper"><button class="step-btn up" data-unit="weeks" data-dir="1">▲</button><input type="text" id="input-weeks" value="0" inputmode="numeric"><button class="step-btn down" data-unit="weeks" data-dir="-1">▼</button></div></div>
-        <div class="control-group"><label>Days</label><div class="input-wrapper"><button class="step-btn up" data-unit="days" data-dir="1">▲</button><input type="text" id="input-days" value="0" inputmode="numeric"><button class="step-btn down" data-unit="days" data-dir="-1">▼</button></div></div>
-        <div class="control-group"><label>Hours</label><div class="input-wrapper"><button class="step-btn up" data-unit="hours" data-dir="1">▲</button><input type="text" id="input-hours" value="0" inputmode="numeric"><button class="step-btn down" data-unit="hours" data-dir="-1">▼</button></div></div>
-        <div class="control-group"><label>Minutes</label><div class="input-wrapper"><button class="step-btn up" data-unit="minutes" data-dir="1">▲</button><input type="text" id="input-minutes" value="0" inputmode="numeric"><button class="step-btn down" data-unit="minutes" data-dir="-1">▼</button></div></div>
-        <div class="control-group"><label>Seconds</label><div class="input-wrapper"><button class="step-btn up" data-unit="seconds" data-dir="1">▲</button><input type="text" id="input-seconds" value="0" inputmode="numeric"><button class="step-btn down" data-unit="seconds" data-dir="-1">▼</button></div></div>
-    </section>
+      <div class="workspace">
+        <aside class="side-console left-console" aria-label="Mission selection">
+          <div class="console-heading"><span class="marker-square"></span> MISSION SELECT</div>
+          <div class="console-rule"></div>
+          <p class="panel-caption">INITIALIZE COUNTDOWN</p>
+          <div class="presets" role="group" aria-label="Quick timer presets">
+            <button class="preset-btn" data-minutes="5" type="button"><span class="preset-icon">01</span><span class="preset-body"><b>05:00</b><small>QUICK FOCUS</small></span><span class="preset-chevron">›</span></button>
+            <button class="preset-btn" data-minutes="10" type="button"><span class="preset-icon">02</span><span class="preset-body"><b>10:00</b><small>POWER SPRINT</small></span><span class="preset-chevron">›</span></button>
+            <button class="preset-btn" data-minutes="15" type="button"><span class="preset-icon">03</span><span class="preset-body"><b>15:00</b><small>DEEP FOCUS</small></span><span class="preset-chevron">›</span></button>
+            <button class="preset-btn" data-minutes="25" type="button"><span class="preset-icon">04</span><span class="preset-body"><b>25:00</b><small>FULL MISSION</small></span><span class="preset-chevron">›</span></button>
+          </div>
+          <div class="left-footnote"><span class="corner-bracket">[</span> SELECT DURATION TO ARM CHRONO CORE <span class="corner-bracket">]</span></div>
+        </aside>
 
-    <main id="clock-stage">
-        <div class="clock-window">
-            <div class="reels-group plus-reels" id="plus-reels"></div>
-            <div class="plus-separator hidden" id="plus-separator">+</div>
-            <div class="reels-group base-reels" id="base-reels"></div>
+        <section class="core-bay" aria-label="Three-dimensional holographic timer">
+          <div class="core-topline"><span>CHRONO CORE <span class="dim">/ 001</span></span><span class="core-top-right"><span class="live-point"></span> LIVE TELEMETRY</span></div>
+          <div class="stage" id="chrono-stage">
+            <div class="stage-schematic stage-schematic-left" aria-hidden="true"><span>AXIS 01</span><span>Y 034.89</span><span>REACTOR</span></div>
+            <div class="stage-schematic stage-schematic-right" aria-hidden="true"><span>WIRE MESH</span><span>HOLO / 3D</span><span>V.02.1</span></div>
+            <div class="stage-corner corner-tl"></div><div class="stage-corner corner-tr"></div>
+            <div class="stage-corner corner-bl"></div><div class="stage-corner corner-br"></div>
+            <div class="stage-crosshair" aria-hidden="true"></div>
+            <canvas id="three-canvas" aria-hidden="true"></canvas>
+            <div id="webgl-fallback" class="webgl-fallback" aria-hidden="true">
+              <div class="fallback-cap fallback-cap-top"></div>
+              <div class="fallback-shell">
+                <div class="fallback-glow"></div>
+                <div class="fallback-screen"><strong id="fallback-time">00:00</strong><small>CHRONO CORE</small></div>
+                <div class="fallback-beams"></div>
+              </div>
+              <div class="fallback-cap fallback-cap-bottom"></div>
+            </div>
+            <div class="stage-coordinate top-coordinate">Y <span>07</span> / Z <span>21</span></div>
+            <div class="stage-coordinate bottom-coordinate">CYLINDRICAL REACTOR CHAMBER <span>—</span> ACTIVE SCHEMATIC</div>
+          </div>
+          <div class="stage-footer"><span class="diamond-symbol">◇</span> REAL-TIME 3D HOLOGRAPHIC INSTRUMENT <span class="drag-hint">DRAG TO INSPECT <span aria-hidden="true">↔</span></span></div>
+        </section>
+
+        <aside class="side-console right-console" aria-label="Live system status">
+          <div class="console-heading"><span class="marker-square"></span> SYSTEM TELEMETRY</div>
+          <div class="console-rule"></div>
+          <div class="telemetry-group"><p class="telemetry-label">MISSION STATUS</p><p class="telemetry-value" id="mission-status" data-mode="idle" role="status" aria-live="polite">AWAITING INPUT</p></div>
+          <div class="telemetry-group"><p class="telemetry-label">TIME REMAINING</p><p class="telemetry-digital" id="telemetry-time">00:00</p></div>
+          <div class="telemetry-group"><div class="progress-header"><span>CORE CHARGE</span><span id="progress-number">000%</span></div><div class="mission-progress" id="mission-progress" role="progressbar" aria-label="Time remaining" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="mission-progress-fill" class="mission-progress-fill"></div></div></div>
+          <div class="telemetry-group"><p class="telemetry-label">REACTOR STATUS</p><p class="reactor-status"><span class="reactor-light"></span><span id="reactor-status">STANDBY</span></p></div>
+          <div class="right-ornament" aria-hidden="true"><div class="ornament-orbit"></div><div class="ornament-orbit second"></div><span>CORE / 01</span></div>
+        </aside>
+      </div>
+
+      <section class="command-deck" aria-label="Timer controls">
+        <div class="command-label"><span class="marker-square"></span> COMMAND DECK <span class="separator">//</span> <span class="command-help">CONFIGURE, ARM &amp; EXECUTE</span></div>
+        <div class="command-inner">
+          <div class="actions">
+            <button id="btn-start" class="action-btn start-btn" type="button" disabled><span class="action-symbol">▶</span> INITIALIZE</button>
+            <button id="btn-pause" class="action-btn pause-btn" type="button" disabled><span class="action-symbol">Ⅱ</span> PAUSE</button>
+            <button id="btn-reset" class="action-btn reset-btn" type="button"><span class="action-symbol">↺</span> RESET</button>
+          </div>
+          <div class="advanced-wrap">
+            <details class="advanced-panel" id="advanced-panel">
+              <summary>▤ <span>CUSTOM TIME CONFIGURATION</span><span class="expansion">▾</span></summary>
+              <div class="controls" id="input-controls">
+                <div class="control-group"><label for="input-years">Years</label><div class="input-wrapper"><button class="step-btn up" data-unit="years" data-dir="1" type="button" aria-label="Increase years">▲</button><input type="number" min="0" id="input-years" value="0"><button class="step-btn down" data-unit="years" data-dir="-1" type="button" aria-label="Decrease years">▼</button></div></div>
+                <div class="control-group"><label for="input-months">Months</label><div class="input-wrapper"><button class="step-btn up" data-unit="months" data-dir="1" type="button" aria-label="Increase months">▲</button><input type="number" min="0" id="input-months" value="0"><button class="step-btn down" data-unit="months" data-dir="-1" type="button" aria-label="Decrease months">▼</button></div></div>
+                <div class="control-group"><label for="input-weeks">Weeks</label><div class="input-wrapper"><button class="step-btn up" data-unit="weeks" data-dir="1" type="button" aria-label="Increase weeks">▲</button><input type="number" min="0" id="input-weeks" value="0"><button class="step-btn down" data-unit="weeks" data-dir="-1" type="button" aria-label="Decrease weeks">▼</button></div></div>
+                <div class="control-group"><label for="input-days">Days</label><div class="input-wrapper"><button class="step-btn up" data-unit="days" data-dir="1" type="button" aria-label="Increase days">▲</button><input type="number" min="0" id="input-days" value="0"><button class="step-btn down" data-unit="days" data-dir="-1" type="button" aria-label="Decrease days">▼</button></div></div>
+                <div class="control-group"><label for="input-hours">Hours</label><div class="input-wrapper"><button class="step-btn up" data-unit="hours" data-dir="1" type="button" aria-label="Increase hours">▲</button><input type="number" min="0" id="input-hours" value="0"><button class="step-btn down" data-unit="hours" data-dir="-1" type="button" aria-label="Decrease hours">▼</button></div></div>
+                <div class="control-group"><label for="input-minutes">Minutes</label><div class="input-wrapper"><button class="step-btn up" data-unit="minutes" data-dir="1" type="button" aria-label="Increase minutes">▲</button><input type="number" min="0" id="input-minutes" value="0"><button class="step-btn down" data-unit="minutes" data-dir="-1" type="button" aria-label="Decrease minutes">▼</button></div></div>
+                <div class="control-group"><label for="input-seconds">Seconds</label><div class="input-wrapper"><button class="step-btn up" data-unit="seconds" data-dir="1" type="button" aria-label="Increase seconds">▲</button><input type="number" min="0" id="input-seconds" value="0"><button class="step-btn down" data-unit="seconds" data-dir="-1" type="button" aria-label="Decrease seconds">▼</button></div></div>
+              </div>
+            </details>
+          </div>
         </div>
+      </section>
+      <footer><span>ORION / CHRONO OPERATIONS</span><span>PRECISION COUNTDOWN ENGINE <span class="footer-accent">◆</span> STANDBY</span></footer>
     </main>
-
-    <section class="timer-actions">
-        <button id="btn-start" class="action-btn primary" disabled>START</button>
-        <button id="btn-pause" class="action-btn" disabled>PAUSE</button>
-        <button id="btn-reset" class="action-btn">RESET</button>
-    </section>
-
-    <input type="hidden" id="hidden-ms-tracker" value="0">
-    
-    <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- Scripts -->
-    <script src="js/particles-init.js" defer></script>
-    <script src="js/three-bg.js" defer></script>
-    <script type="module" src="js/main.js"></script>
+  </div>
+  <input type="hidden" id="hidden-ms-tracker" value="0">
+  <!-- Existing Three.js version retained, no React or build step needed. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/three-bg.js" defer></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
