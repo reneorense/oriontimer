@@ -1,6 +1,3 @@
-/**
- * Creates the DOM structure for a single 3D drum.
- */
 export function createReelContainer(id, label) {
     const container = document.createElement('div');
     container.className = 'reel-container';
@@ -14,12 +11,15 @@ export function createReelContainer(id, label) {
     drum.dataset.rotation = 0;
     drum.style.transform = `rotateX(0deg)`;
 
-    // Create the 10 faces (0-9)
+    // Mathematical radius for an 80px height cylinder
+    const radius = 80 * 1.53884; 
+
     for (let i = 0; i < 10; i++) {
         const face = document.createElement('div');
         face.className = 'face';
         face.textContent = i;
-        face.style.transform = `rotateX(${i * 36}deg) translateZ(var(--radius))`;
+        // Calculate exact pixels instead of CSS variables
+        face.style.transform = `rotateX(${i * 36}deg) translateZ(${radius}px)`;
         drum.appendChild(face);
     }
 
@@ -34,15 +34,11 @@ export function createReelContainer(id, label) {
     return container;
 }
 
-/**
- * Updates the drum to show a specific digit, ensuring forward rotation.
- */
 export function setReelDigit(id, newDigit, colorHex) {
     const drum = document.querySelector(`#container-${id} .drum`);
     const faces = document.querySelectorAll(`#container-${id} .face`);
     if (!drum) return;
 
-    // Update colors if provided
     if (colorHex) {
         faces.forEach(face => face.style.color = colorHex);
     }
@@ -52,9 +48,7 @@ export function setReelDigit(id, newDigit, colorHex) {
     if (currentDigit < 0) currentDigit += 10;
 
     let diff = newDigit - currentDigit;
-    
-    // Always rotate forward (e.g., 9 to 0 goes +1 step)
-    if (diff < 0) diff += 10;
+    if (diff < 0) diff += 10; // Forward spin only
 
     currentRotation += (diff * 36);
     drum.dataset.rotation = currentRotation;
