@@ -15,10 +15,11 @@ export class TimerEngine {
     }
 
     start() {
-        if (this.isRunning || this.remainingMs <= 0) return;
+        if (this.isRunning || this.remainingMs <= 0) return false;
         this.isRunning = true;
         this.lastTime = performance.now();
         this.loop();
+        return true;
     }
 
     pause() {
